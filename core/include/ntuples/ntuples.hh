@@ -126,6 +126,11 @@ ax_name_container(Ts&& ... ts) -> ax_name_container< _Remove_cvref_t<Ts>... >;
 template<int N, typename... Ts> using NthTypeOf =
 typename std::tuple_element<N, std::tuple<Ts...>>::type;
 
+template <typename T2, typename T3, typename T4>
+auto get_ax_name_container(const ax_name_container<T2, T3, T4>& t) {
+  return  ax_name_container<T2, T3, T4>{};
+}
+
 
 
 template <typename T, typename data_T>
@@ -136,10 +141,7 @@ struct base_maker
 template <typename T, typename data_T>
 using base_maker_t = typename base_maker<T, data_T>::type;
 
-template <typename T2, typename T3, typename T4>
-decltype(auto) get_ax_name_container(const ax_name_container<T2, T3, T4>& t) {
-  return  ax_name_container<T2, T3, T4>{};
-}
+
 
 template <typename... T>
 struct ntuple : base_maker_t<_Remove_cvref_t<T>, T>... {
@@ -161,7 +163,6 @@ struct ntuple : base_maker_t<_Remove_cvref_t<T>, T>... {
 
     constexpr_for<0, sizeof...(T), 1>([&](auto i) {
       using  current_t = decltype(get_ax_name_container(NthTypeOf<i, _Remove_cvref_t<T>...>{}));
-      //using current_t = NthTypeOf<i, T...>;
       out << " ";
       out << current_t::get(self);
       out << " |";
@@ -286,30 +287,36 @@ auto fill_dataframe(int index, F&& f) {
 
 #define ax_maker(name_)  [] { \
 auto l = [](auto e) { \
-if constexpr (!std::is_reference_v< decltype(e.val)> ){\
-struct Zt##name_ {\
- Zt##name_() {} \
- Zt##name_( const decltype(e.val) & e_): name_(e_) {} \
- Zt##name_(decltype(e.val) & e_): name_(e_) {} \
- Zt##name_(decltype(e.val) && e_): name_(std::move( e_ )) {} \
-  decltype(e.val) name_; \
-  decltype(e.val) value() const {\
-    return name_;\
-  }\
-}; return type_container<Zt##name_> {};} else { \
-struct Zt##name_ {\
- Zt##name_(decltype(e.val)  e_): name_(e_) {} \
-  decltype(e.val) name_; \
-  decltype(e.val) value() const {\
-    return name_;\
-  }\
-}; return type_container<Zt##name_> {};\
-} };\
-auto getter = [](auto& e) { struct getter_t {\
-  static constexpr auto& get(decltype(e)& x) {\
-    return x.name_ ;\
-  }\
-}; return getter_t{}; };\
+  if constexpr (!std::is_reference_v< decltype(e.val)> ){\
+    struct Zt##name_ {\
+      Zt##name_() {} \
+      Zt##name_( const decltype(e.val) & e_): name_(e_) {} \
+      Zt##name_(decltype(e.val) & e_): name_(e_) {} \
+      Zt##name_(decltype(e.val) && e_): name_(std::move( e_ )) {} \
+      decltype(e.val) name_; \
+      decltype(e.val) value() const {\
+        return name_;\
+      }\
+    }; \
+    return type_container<Zt##name_> {};\
+  } else { \
+    struct Zt##name_ {\
+      Zt##name_(decltype(e.val)  e_): name_(e_) {} \
+      decltype(e.val) name_; \
+      decltype(e.val) value() const {\
+        return name_;\
+      }\
+    }; \
+    return type_container<Zt##name_> {};\
+  } };\
+auto getter = [](auto& e) { \
+  struct getter_t {\
+    static constexpr auto& get(decltype(e)& x) {\
+      return x.name_ ;\
+    }\
+  }; \
+  return getter_t{}; \
+};\
 struct name_getter_t {\
   static auto get_name() {\
     return #name_;\
