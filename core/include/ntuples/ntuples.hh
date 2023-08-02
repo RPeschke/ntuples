@@ -2,18 +2,18 @@
 
 
 #include <type_traits>
-#include <string>
-#include <optional>
-#include <iostream>
 
+
+#include <iostream>
 #include <vector>
 
-
+#include <iomanip> 
 
 template <class _Ty>
 using _Remove_cvref_t = std::remove_cv_t<std::remove_reference_t<_Ty>>;
 
-
+template<int N, typename... Ts> using NthTypeOf =
+typename std::tuple_element<N, std::tuple<Ts...>>::type;
 
 template <auto Start, auto End, auto Inc, class F>
 constexpr void constexpr_for(F&& f)
@@ -23,6 +23,8 @@ constexpr void constexpr_for(F&& f)
     constexpr_for < Start + Inc, End, Inc >(f);
   }
 }
+
+
 
 
 template <typename T1>
@@ -50,13 +52,10 @@ struct ax_type : T2 {
     return v;
   }
 
-  static  const std::string& name() {
-    static  std::string ret = struct_maker::get_name();
-    return ret;
-  }
+
 
   friend std::ostream& operator<< (std::ostream& out, const ax_type& self) {
-    out << self.name() << " : " << self.v;
+    out << self.get_name() << " : " << self.v;
     return out;
   }
 
@@ -100,11 +99,6 @@ struct ax_name_container {
     return getter1::get(t);
   }
 
-  template <typename T>
-  static constexpr decltype(auto) get1(T& t) {
-    using   getter1 = decltype(std::declval<T3>()(t));
-    return getter1::get(t);
-  }
 
   static auto get_name() {
     return T4::get_name();
@@ -123,11 +117,10 @@ struct ax_name_container {
 template <typename ... Ts>
 ax_name_container(Ts&& ... ts) -> ax_name_container< _Remove_cvref_t<Ts>... >;
 
-template<int N, typename... Ts> using NthTypeOf =
-typename std::tuple_element<N, std::tuple<Ts...>>::type;
+
 
 template <typename T2, typename T3, typename T4>
-auto get_ax_name_container(const ax_name_container<T2, T3, T4>& t) {
+auto constexpr get_ax_name_container(const ax_name_container<T2, T3, T4>& t) {
   return  ax_name_container<T2, T3, T4>{};
 }
 
@@ -136,7 +129,7 @@ auto get_ax_name_container(const ax_name_container<T2, T3, T4>& t) {
 template <typename T, typename data_T>
 struct base_maker
 {
-  using type = typename  T::struct_maker::template base_t<data_T >;
+  using type = typename  T::template base_t<data_T >;
 };
 template <typename T, typename data_T>
 using base_maker_t = typename base_maker<T, data_T>::type;
@@ -159,7 +152,7 @@ struct ntuple : base_maker_t<_Remove_cvref_t<T>, T>... {
 
   friend std::ostream& operator<<(std::ostream& out, const ntuple& self) {
     out << "|";
-    using current_t = NthTypeOf<0, T...>;
+    
 
     constexpr_for<0, sizeof...(T), 1>([&](auto i) {
       using  current_t = decltype(get_ax_name_container(NthTypeOf<i, _Remove_cvref_t<T>...>{}));
@@ -205,45 +198,56 @@ struct dataframe : base_maker_t<_Remove_cvref_t<Ts>, ax_type2< std::vector<Ts>, 
   void push_back(const T& t) {
 
     [](auto...) {}
-    (_Remove_cvref_t<Ts>::struct_maker::get(*this).emplace_back(_Remove_cvref_t<Ts>::struct_maker::get(t))...);
+    ( Ts::get(*this).emplace_back(Ts::get(t)) ...);
 
   }
 
   template <typename T1>
   decltype(auto) get() const {
-    return   _Remove_cvref_t<T1>::struct_maker::get(*this);
+    return  T1::get(*this);
   }
 
   template <typename T1>
   decltype(auto) get() {
-    return   _Remove_cvref_t<T1>::struct_maker::get(*this);
+    return   T1::get(*this);
   }
 
   auto size() const {
-    auto size = _Remove_cvref_t<NthTypeOf<0, Ts ...>>::struct_maker::get(*this).size();
+    auto size = _Remove_cvref_t<NthTypeOf<0, Ts ...>>::get(*this).size();
     return size;
   }
 
+  template <int N>
+  static constexpr auto get_nth_type() {
+    
+    return get_ax_name_container(NthTypeOf<N, _Remove_cvref_t<Ts>...>{});
+  }
   friend std::ostream& operator<<(std::ostream& out, const dataframe& self) {
     out << "|";
+    
     constexpr_for<0, sizeof...(Ts), 1>([&](auto i) {
-
-      using  current_t = decltype(get_ax_name_container(NthTypeOf<i, _Remove_cvref_t<Ts>...>{}));
+      static constexpr auto x = self.get_nth_type<i>();
       out << " ";
-      out << current_t::get_name();
+      out <<  std::setw(5) << x.get_name();
       out << " |";
       });
-    out << "\n";
 
+    out << "\n";
+    out << "|";
+    constexpr_for<0, sizeof...(Ts), 1>([&](auto i) {
+      out << "-";
+      out <<  std::setw(5) << "-----";
+      out << "-|";
+      });
+    out << "\n";
     auto size = self.size();
     for (int i = 0; i < size; ++i) {
       auto current_element = self[i];
       out << "|";
       constexpr_for<0, sizeof...(Ts), 1>([&](auto i) {
-        using  current_t = decltype(get_ax_name_container(NthTypeOf<i, _Remove_cvref_t<Ts>...>{}));
-
+        static constexpr auto x = self.get_nth_type<i>();
         out << " ";
-        out << current_t::get(current_element).v;
+        out <<  std::setw(5) << x.get(current_element).v;
         out << " |";
         });
       out << "\n";

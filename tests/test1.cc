@@ -11,7 +11,7 @@ int main(int argv, char** argc) {
   auto df = dataframe<decltype(x123)>();
   df.ex6.push_back(123);
 
-  auto x12 = decltype(x123)::struct_maker::get(df);
+  auto x12 = x123.get(df);
 
 
   auto nt3 = ntuple(x123,
@@ -37,16 +37,19 @@ int main(int argv, char** argc) {
   auto df1 = fill_dataframe(100, [](int i) {
     return ntuple(
       ax_maker(ex1) = i,
-      ax_maker(ex2) = i * i
+      ax_maker(ex2) = i * i,
+      ax_maker(ex3) = i * i * i
     );
     });
 
+  std::cout << "\n\n" << std::endl;
   std::cout << df1 << std::endl;
+  std::cout << "\n\n" << std::endl;
   std::cout << df1[5] << std::endl;
   df1[5].ex1 = 123213;
   df1.ex2[5] = 321;
   std::cout << df1[df1.ex2][5] << std::endl;
-
+  
 
   return 1;
 }
