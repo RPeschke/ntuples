@@ -79,9 +79,14 @@ struct ax_type2 : T1, T2 {
 
 };
 
-
 template <typename T2, typename T3, typename T4>
-struct ax_name_container {
+struct ax_name_container_base {
+  using type = T2;
+  using getter = T3;
+  using name_getter = T4;
+};
+template <typename TBase>
+struct ax_name_container  : TBase{
 
   template <typename T>
   struct type_wrap {
@@ -95,17 +100,15 @@ struct ax_name_container {
 
   template <typename T>
   static constexpr decltype(auto) get(T& t) {
-    using   getter1 = decltype(std::declval<T3>()(t));
+    using   getter1 = decltype(std::declval<getter>()(t));
     return getter1::get(t);
   }
 
 
   static auto get_name() {
-    return T4::get_name();
+    return name_getter::get_name();
   }
-  using type = T2;
-  using getter = T3;
-  using name_getter = T4;
+
   template <typename T>
   constexpr auto operator=(T t) {
     return ax_type<_Remove_cvref_t<T>, ax_name_container> {std::move(t)};
@@ -119,9 +122,9 @@ ax_name_container(Ts&& ... ts) -> ax_name_container< _Remove_cvref_t<Ts>... >;
 
 
 
-template <typename T2, typename T3, typename T4>
-auto constexpr get_ax_name_container(const ax_name_container<T2, T3, T4>& t) {
-  return  ax_name_container<T2, T3, T4>{};
+template <typename T2>
+auto constexpr get_ax_name_container(const ax_name_container<T2>& t) {
+  return  ax_name_container<T2>{};
 }
 
 
@@ -143,9 +146,9 @@ struct ntuple : base_maker_t<_Remove_cvref_t<T>, T>... {
   ntuple(Ts&&... t1) : base_maker_t<_Remove_cvref_t<T>, T>(std::forward<Ts>(t1)) ...  {}
 
 
-  template <typename T2, typename T3, typename T4>
-  decltype(auto) operator[](const ax_name_container<T2, T3, T4>& t) {
-    return  ax_name_container<T2, T3, T4>::get(*this);
+  template <typename T2>
+  decltype(auto) operator[](const ax_name_container<T2>& t) {
+    return  ax_name_container<T2>::get(*this);
   }
 
 
@@ -175,9 +178,9 @@ ntuple(Ts&& ... ts) -> ntuple< _Remove_cvref_t<Ts> ...>;
 template <typename... Ts>
 struct dataframe : base_maker_t<_Remove_cvref_t<Ts>, ax_type2< std::vector<Ts>, typename Ts::struct_maker> >... {
 
-  template <typename T2, typename T3, typename T4>
-  decltype(auto) operator[](const ax_name_container<T2, T3, T4>& t) {
-    return  ax_name_container<T2, T3, T4>::get(*this);
+  template <typename T2>
+  decltype(auto) operator[](const ax_name_container<T2>& t) {
+    return  ax_name_container<T2>::get(*this);
   }
 
   auto operator[](size_t i) {
@@ -235,9 +238,9 @@ struct dataframe : base_maker_t<_Remove_cvref_t<Ts>, ax_type2< std::vector<Ts>, 
     out << "\n";
     out << "|";
     constexpr_for<0, sizeof...(Ts), 1>([&](auto i) {
-      out << "-";
-      out <<  std::setw(5) << "-----";
-      out << "-|";
+      
+      out <<  std::setw(5) << "-------|";
+      
       });
     out << "\n";
     auto size = self.size();
@@ -326,7 +329,7 @@ struct name_getter_t {\
     return #name_;\
   }\
 };\
-constexpr auto x = ax_name_container<decltype(l), decltype(getter), name_getter_t>{}; return x;\
+constexpr auto x = ax_name_container<ax_name_container_base<decltype(l), decltype(getter), name_getter_t> >{}; return x;\
 }()
 
 
