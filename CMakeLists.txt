@@ -47,10 +47,13 @@ export(TARGETS ${INSTALL_TARGETS} NAMESPACE ntuples::       FILE ${PROJECT_BINAR
 
 install(DIRECTORY core/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(
-  FILES ${project_config} ${version_config}
-  DESTINATION ${ntuples_CMAKE_DIR})
 
-
-  #install(EXPORT ${targets_export_name}  	NAMESPACE ntuples::  	DESTINATION ${CMAKE_INSTALL_DATADIR}/ntuples )
+message("asdasdad")
+message(${CMAKE_INSTALL_DATADIR} )
+message("asdasdad")
+install(EXPORT ${targets_export_name}
+  
+	NAMESPACE ntuples::
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/ntuples
+  )
 
