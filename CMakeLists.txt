@@ -25,10 +25,8 @@ target_include_directories(ntuples INTERFACE
 
 
 target_compile_features(ntuples INTERFACE cxx_std_17)
-target_include_directories(ntuples
-	INTERFACE
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
+
 
 
 add_executable(test1  tests/test1.cc)
