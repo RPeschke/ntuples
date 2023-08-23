@@ -33,9 +33,15 @@ add_executable(test1  tests/test1.cc)
 target_link_libraries(test1 PRIVATE ntuples)
 
 
+set(targets_export_name ntuples-targets)
+set(INSTALL_TARGETS ntuples)
 
-install(TARGETS ntuples EXPORT ntuples-targets)
+
+install(TARGETS ${INSTALL_TARGETS} EXPORT ${targets_export_name})
+export(TARGETS ${INSTALL_TARGETS} NAMESPACE ntuples::
+         FILE ${PROJECT_BINARY_DIR}/${targets_export_name}.cmake)
+
 install(DIRECTORY core/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(EXPORT ntuples-targets
+install(EXPORT ${targets_export_name}
 	NAMESPACE ntuples::
 	DESTINATION ${CMAKE_INSTALL_DATADIR}/ntuples)
