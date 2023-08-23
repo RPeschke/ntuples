@@ -46,11 +46,12 @@ install(TARGETS ${INSTALL_TARGETS} EXPORT ${targets_export_name})
 export(TARGETS ${INSTALL_TARGETS} NAMESPACE ntuples::       FILE ${PROJECT_BINARY_DIR}/${targets_export_name}.cmake           )
 
 install(DIRECTORY core/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES
+  ${version_config}
+  cmake/ntuples-config.cmake
+  DESTINATION share/cmake/ntuples)
 
 
-message("asdasdad")
-message(${CMAKE_INSTALL_DATADIR} )
-message("asdasdad")
 install(EXPORT ${targets_export_name}
   
 	NAMESPACE ntuples::
