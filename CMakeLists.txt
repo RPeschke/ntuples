@@ -51,9 +51,6 @@ install(
   FILES ${project_config} ${version_config}
   DESTINATION ${ntuples_CMAKE_DIR})
 
-install(EXPORT ${targets_export_name}
-  
-	NAMESPACE ntuples::
-	DESTINATION ${CMAKE_INSTALL_DATADIR}/ntuples
-  )
+
+  #install(EXPORT ${targets_export_name}  	NAMESPACE ntuples::  	DESTINATION ${CMAKE_INSTALL_DATADIR}/ntuples )
 
