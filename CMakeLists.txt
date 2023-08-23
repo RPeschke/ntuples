@@ -48,7 +48,7 @@ export(TARGETS ${INSTALL_TARGETS} NAMESPACE ntuples::       FILE ${PROJECT_BINAR
 install(DIRECTORY core/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES
   cmake/ntuples-config.cmake
-  DESTINATION ${PROJECT_BINARY_DIR}/ntuples)
+  DESTINATION share/ntuples)
 
 
 install(EXPORT ${targets_export_name}
