@@ -35,7 +35,7 @@ target_link_libraries(test1 PRIVATE ntuples)
 
 
 install(TARGETS ntuples EXPORT ntuples-targets)
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY core/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT ntuples-targets
 	NAMESPACE ntuples::
 	DESTINATION ${CMAKE_INSTALL_DATADIR}/ntuples)
