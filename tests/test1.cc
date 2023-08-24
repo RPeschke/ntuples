@@ -5,12 +5,17 @@
 
   ax_new_axis(subdetector, int());
 
-  namespace KLM_Helpers {
-    ax_new_axis(subdetector_name, std::string());
+  
 
-  }
+  
 
-  ax_new_axis_t(sector , int() );
+//  nt_new_axis_t(sector , int() );
+  //namespace __nt{       __nt_new_axis_core( sector); static const  auto s = nt::ax_name_container<ztsector>{} = int();       } 
+  //using sector = decltype( __nt::s );
+  nt_new_axis_t(sector , int{});
+  nt_new_axis_c(sector1, std::string());
+
+  using ex1 = decltype( sector1 );
 
 int main(int argv, char** argc) {
 
@@ -18,8 +23,8 @@ int main(int argv, char** argc) {
 
     return nt::ntuple{
       subdetector = i ,
-      KLM_Helpers::subdetector_name = [&]{  if (i == 1) return  "EKLM" ; return  "BKLM";}(),
-      sector{1}
+      sector{123},
+      sector1 = std::string("asd")
     };
     }
     );

@@ -95,21 +95,20 @@ private:
     using getter = T3;
     using name_getter = T4;
     constexpr ax_name_container_base() = default;
-  };
 
-    
-  template <typename TBase>
-  struct ax_name_container  : TBase{
-    constexpr ax_name_container() = default;
     template <typename T>
     struct type_wrap {
       T val;
     };
 
+
     template <typename T>
-    static constexpr  auto struct_maker123() {
+    static constexpr  auto struct_maker() {
       return  decltype(std::declval<type>() (std::declval<type_wrap<T> >())){};
     }
+
+    template <typename Data_T>
+    using base_t = typename decltype(struct_maker<Data_T>())::type;
 
     template <typename T>
     static constexpr decltype(auto) get(T& t) {
@@ -117,17 +116,31 @@ private:
       return getter1::get(t);
     }
 
+  };
+
+    
+  template <typename TBase>
+  struct ax_name_container  : TBase{
+    constexpr ax_name_container() = default;
+
+
+    template <typename T>
+    static constexpr  auto struct_maker123() {
+      return  decltype(std::declval<type>() (std::declval<type_wrap<T> >())){};
+    }
+
+
 
     static auto get_name() {
       return name_getter::get_name();
     }
 
     template <typename T>
-    constexpr auto operator=(T t) {
+    constexpr auto operator=(T t) const {
+      
       return ax_type<_Remove_cvref_t<T>, ax_name_container> {std::move(t)};
     }
-    template <typename Data_T>
-    using base_t = typename decltype(struct_maker123<Data_T>())::type;
+
   };
 
   template <typename ... Ts>
@@ -305,8 +318,8 @@ auto fill_dataframe(int index, F&& f) {
 
 
 
-#define ax_maker(name_)  [] { \
-    auto struct_maker_template_lambda = [](auto e) { \
+#define ax_maker(name_)  [] () constexpr { \
+    auto struct_maker_template_lambda = [](auto e) constexpr { \
       if constexpr (!std::is_reference_v< decltype(e.val)> ){\
         struct Zt##name_ {\
          Zt##name_() {} \
@@ -330,7 +343,7 @@ auto fill_dataframe(int index, F&& f) {
         return nt::type_container<Zt##name_> {};\
       } \
     };\
-    auto getter = [](auto& e) { \
+    auto getter = [](auto& e) constexpr { \
       struct getter_t {\
         static constexpr auto& get(decltype(e)& x) {\
           return x.name_ ;\
@@ -343,17 +356,53 @@ auto fill_dataframe(int index, F&& f) {
         return #name_;\
       }\
     };\
-    static constexpr auto x = nt::ax_name_container<\
+    return  nt::ax_name_container<\
                                 nt::ax_name_container_base<decltype(struct_maker_template_lambda), \
                                 decltype(getter), \
                                 name_getter_t> >{}; \
-    return x;\
 }()
 
 
-#define ax_new_axis(name_, value) auto __internal__##name_ = [] {return  ax_maker(name_) = value; };\
-                                  static  const inline  auto name_ = decltype(__internal__##name_() ){value}
+
+
+#define ax_new_axis(name_, value) static  constexpr inline  auto name_ = (ax_maker(name_) = value)
 
 
 #define ax_new_axis_t(name_, value) auto __internal__##name_ = [] {return  ax_maker(name_) = value; }; using  name_ = decltype (__internal__##name_() ) 
                                   
+
+
+
+  // ax_new_axis(name_1231, 123);
+
+#define __nt_new_axis_core(name_) struct zt##name_{ \
+    template <typename T> \
+    struct type_wrap { \
+        type_wrap() {} \
+        template <typename T1> \
+        type_wrap(  T1 &&  e_): name_( std::forward<T1>(e_) ) {} \
+        T name_; \
+    }; \
+    template <typename Data_T> \
+    using base_t = type_wrap<Data_T>; \
+    struct  name_getter{ \
+        static auto get_name() { \
+            return #name_; \
+        } \
+    }; \
+    template <typename T> \
+    static constexpr auto& get(T& t) { \
+      return  t.name_; \
+    } \
+  }
+
+#define __nt_new_axis(qualifier, name_, value) namespace __nt{  __nt_new_axis_core( name_); } \
+  qualifier name_ = (nt::ax_name_container<__nt::zt##name_>{} = value)
+
+ 
+#define nt_new_axis( name_, value) __nt_new_axis(static  constexpr inline  auto, name_, value)
+#define nt_new_axis_c( name_, value) __nt_new_axis(static  const inline  auto, name_, value)
+
+
+#define nt_new_axis_t(name_, value) namespace __nt{  __nt_new_axis_core( name_);  } \
+using name_ = decltype(nt::ax_name_container<__nt::zt##name_>{} = value)
