@@ -20,7 +20,7 @@ add_library(ntuples::ntuples ALIAS ntuples)
 
 target_include_directories(ntuples INTERFACE  
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/include>  
-    $<INSTALL_INTERFACE:core/include>  # <prefix>/core/include
+    $<INSTALL_INTERFACE:/include>  # <prefix>/core/include
 )
 
 
