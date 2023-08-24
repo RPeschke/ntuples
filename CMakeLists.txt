@@ -5,8 +5,8 @@ set(ntuple_VERSION 1.0.1)
 
 project(ntuples
 	VERSION ${ntuple_VERSION}
-	DESCRIPTION "A simple json parsing and stringifying library"
-	HOMEPAGE_URL "https://github.com/northwindtraders/ntuples"
+	DESCRIPTION "A header-only library for n-tuple operations"
+	HOMEPAGE_URL "https://github.com/RPeschke/ntuples"
 	LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
@@ -20,7 +20,7 @@ add_library(ntuples::ntuples ALIAS ntuples)
 
 target_include_directories(ntuples INTERFACE  
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/include>  
-    $<INSTALL_INTERFACE:include>  # <prefix>/core/include
+    $<INSTALL_INTERFACE:include>  
 )
 
 
@@ -43,12 +43,14 @@ set(INSTALL_TARGETS ntuples)
 set(ntuples_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/ntuples )
 
 install(TARGETS ${INSTALL_TARGETS} EXPORT ${targets_export_name})
-export(TARGETS ${INSTALL_TARGETS} NAMESPACE ntuples::       FILE ${PROJECT_BINARY_DIR}/${targets_export_name}.cmake           )
+
 
 install(DIRECTORY core/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
 install(FILES
   cmake/ntuples-config.cmake
-  DESTINATION share/ntuples)
+  DESTINATION share/ntuples
+  )
 
 
 install(EXPORT ${targets_export_name}
