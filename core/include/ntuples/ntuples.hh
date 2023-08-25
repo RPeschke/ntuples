@@ -89,22 +89,30 @@ private:
 
   };
 
-  template <typename T2, typename T3, typename T4>
-  struct ax_name_container_base {
+  struct ax_name_container_base_const{
+    static constexpr int c_struct_maker = 0;
+    static constexpr int c_getter1      = 1;
+    static constexpr int c_get_name     = 2;
+  };
+
+  template <typename T2>
+  struct ax_name_container_base : ax_name_container_base_const{
     using type = T2;
-    using getter = T3;
-    using name_getter = T4;
+
+
     constexpr ax_name_container_base() = default;
 
-    template <typename T>
-    struct type_wrap {
+    template <typename T, int N>
+    struct type_wrap  {
+      static constexpr int N_value = N;
       T val;
+      using type = T;
     };
 
 
     template <typename T>
     static constexpr  auto struct_maker() {
-      return  decltype(std::declval<type>() (std::declval<type_wrap<T> >())){};
+      return  decltype(std::declval<type>() (std::declval<type_wrap<T, c_struct_maker> >())){};
     }
 
     template <typename Data_T>
@@ -112,10 +120,13 @@ private:
 
     template <typename T>
     static constexpr decltype(auto) get(T& t) {
-      using   getter1 = decltype(std::declval<getter>()(t));
+      using  getter1 = decltype(std::declval<type>() (std::declval<type_wrap<T&, c_getter1> >()));
       return getter1::get(t);
     }
-
+    static auto get_name() {
+      using  name_getter = decltype(std::declval<type>() (std::declval<type_wrap<int, c_get_name> >()));
+      return name_getter::get_name();
+    }
   };
 
     
@@ -123,7 +134,10 @@ private:
   struct ax_name_container  : TBase{
     constexpr ax_name_container() = default;
 
-
+    template <typename T>
+    constexpr auto operator()(T&& t) const{
+      return get(std::forward<T>(t));
+    }
     template <typename T>
     static constexpr  auto struct_maker123() {
       return  decltype(std::declval<type>() (std::declval<type_wrap<T> >())){};
@@ -131,9 +145,7 @@ private:
 
 
 
-    static auto get_name() {
-      return name_getter::get_name();
-    }
+
 
     template <typename T>
     constexpr auto operator=(T t) const {
@@ -320,46 +332,49 @@ auto fill_dataframe(int index, F&& f) {
 
 #define ax_maker(name_)  [] () constexpr { \
     auto struct_maker_template_lambda = [](auto e) constexpr { \
-      if constexpr (!std::is_reference_v< decltype(e.val)> ){\
-        struct Zt##name_ {\
-         Zt##name_() {} \
-         Zt##name_( const decltype(e.val) & e_): name_(e_) {} \
-         Zt##name_(decltype(e.val) & e_): name_(e_) {} \
-         Zt##name_(decltype(e.val) && e_): name_(std::move( e_ )) {} \
-          decltype(e.val) name_; \
-          decltype(e.val) value() const {\
-            return name_;\
+      using ARG_T = decltype(e);\
+      if constexpr (e.N_value == nt::ax_name_container_base_const::c_struct_maker){\
+        if constexpr (!std::is_reference_v< ARG_T::type> ){\
+          struct Zt##name_ {\
+           Zt##name_() {} \
+           Zt##name_( const decltype(e.val) & e_): name_(e_) {} \
+           Zt##name_(decltype(e.val) & e_): name_(e_) {} \
+           Zt##name_(decltype(e.val) && e_): name_(std::move( e_ )) {} \
+            decltype(e.val) name_; \
+            decltype(e.val) value() const {\
+              return name_;\
+            }\
+          }; \
+          return nt::type_container<Zt##name_> {};\
+        } else { \
+          struct Zt##name_ {\
+            Zt##name_(decltype(e.val)  e_): name_(e_) {} \
+            decltype(e.val) name_; \
+            decltype(e.val) value() const {\
+              return name_;\
+            }\
+          }; \
+          return nt::type_container<Zt##name_> {};\
+        } \
+      } else if constexpr (e.N_value == nt::ax_name_container_base_const::c_getter1 ){\
+        struct getter_t {\
+          static constexpr auto& get(decltype(e.val) x) {\
+            return x.name_ ;\
           }\
         }; \
-        return nt::type_container<Zt##name_> {};\
-      } else { \
-        struct Zt##name_ {\
-          Zt##name_(decltype(e.val)  e_): name_(e_) {} \
-          decltype(e.val) name_; \
-          decltype(e.val) value() const {\
-            return name_;\
+        return getter_t{}; \
+      } else if constexpr (e.N_value == nt::ax_name_container_base_const::c_get_name ){\
+        struct name_getter_t {\
+          static auto get_name() {\
+            return #name_;\
           }\
-        }; \
-        return nt::type_container<Zt##name_> {};\
-      } \
-    };\
-    auto getter = [](auto& e) constexpr { \
-      struct getter_t {\
-        static constexpr auto& get(decltype(e)& x) {\
-          return x.name_ ;\
-        }\
-      }; \
-      return getter_t{}; \
-    };\
-    struct name_getter_t {\
-      static auto get_name() {\
-        return #name_;\
+        };\
+        return name_getter_t{};\
       }\
     };\
     return  nt::ax_name_container<\
-                                nt::ax_name_container_base<decltype(struct_maker_template_lambda), \
-                                decltype(getter), \
-                                name_getter_t> >{}; \
+                                nt::ax_name_container_base<decltype(struct_maker_template_lambda)> \
+                                >{}; \
 }()
 
 
@@ -385,11 +400,9 @@ auto fill_dataframe(int index, F&& f) {
     }; \
     template <typename Data_T> \
     using base_t = type_wrap<Data_T>; \
-    struct  name_getter{ \
-        static auto get_name() { \
-            return #name_; \
-        } \
-    }; \
+    static auto get_name() { \
+      return #name_; \
+    } \
     template <typename T> \
     static constexpr auto& get(T& t) { \
       return  t.name_; \
@@ -406,3 +419,10 @@ auto fill_dataframe(int index, F&& f) {
 
 #define nt_new_axis_t(name_, value) namespace __nt{  __nt_new_axis_core( name_);  } \
 using name_ = decltype(nt::ax_name_container<__nt::zt##name_>{} = value)
+
+#define nt_new_name(name_) namespace __nt{ __nt_new_axis_core(name_); } \
+static  constexpr inline  auto name_ = nt::ax_name_container<__nt::zt##name_>{}
+
+
+#define nt_new_name_t(name_) namespace __nt{ __nt_new_axis_core(name_); } \
+using  name_ = nt::ax_name_container<__nt::zt##name_>

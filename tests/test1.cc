@@ -17,6 +17,9 @@
 
   using ex1 = decltype( sector1 );
 
+  nt_new_name(axis);
+  nt_new_name_t(plane);
+
 int main(int argv, char** argc) {
 
   auto klm_nameing  = nt::fill_dataframe(2 , [](int i) {
@@ -24,13 +27,18 @@ int main(int argv, char** argc) {
     return nt::ntuple{
       subdetector = i ,
       sector{123},
-      sector1 = std::string("asd")
+      sector1 = std::string("asd"),
+      axis = "4655",
+      plane() = 1231
     };
     }
     );
 
+ 
+  std::cout << axis(klm_nameing[0]) << std::endl;
+  auto x = ax_maker(ex1) = 456;
 
-  std::cout << klm_nameing << std::endl;
+
 
 
 
