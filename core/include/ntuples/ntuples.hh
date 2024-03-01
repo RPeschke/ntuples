@@ -345,133 +345,36 @@ namespace nt
           T::get(*this)...,
           ARGS::get(rhs)...);
     }
+
+
+    inline static constexpr std::size_t __size__ = sizeof...(T);
   };
 
   template <typename... Ts>
   ntuple(Ts &&...ts) -> ntuple<_Remove_cvref_t<Ts>...>;
 
-  template <typename... Ts>
-  struct dataframe : nt::base_maker_t<nt::_Remove_cvref_t<Ts>, nt::ax_type2<std::vector<Ts>, typename Ts::struct_maker>>...
-  {
-
-    template <typename T2>
-    decltype(auto) operator[](const nt::ax_name_container<T2> &t)
-    {
-      return nt::ax_name_container<T2>::get(*this);
-    }
-
-    auto operator[](size_t i)
-    {
-      using ret_t = nt::ntuple<_Remove_cvref_t<Ts> &...>;
-      return ret_t{
-          get<Ts>()[i]...};
-    }
-
-    auto operator[](size_t i) const
-    {
-      using ret_t = nt::ntuple<const Ts &...>;
-      return ret_t{
-          get<Ts>()[i]...};
-    }
-
-    template <typename T>
-    void push_back(const T &t)
-    {
-
-      [](auto...) {}(Ts::get(*this).emplace_back(Ts::get(t))...);
-    }
-
-    template <typename... T>
-    void emplace_back(T &&...t)
-    {
-      static_assert(sizeof...(t) == sizeof...(Ts), "\n==============missmatched amount of arguments=================\n");
-      [](auto...) {}(T::get(*this).emplace_back(std::forward<T>(t))...);
-    }
-
-    template <typename T1>
-    decltype(auto) get() const
-    {
-      return T1::get(*this);
-    }
-
-    template <typename T1>
-    decltype(auto) get()
-    {
-      return T1::get(*this);
-    }
-
-    auto size() const
-    {
-      auto size = _Remove_cvref_t<NthTypeOf<0, Ts...>>::get(*this).size();
-      return size;
-    }
-
-    template <int N>
-    static constexpr auto get_nth_type()
-    {
-
-      return get_ax_name_container(NthTypeOf<N, _Remove_cvref_t<Ts>...>{});
-    }
-    friend std::ostream &operator<<(std::ostream &out, const dataframe &self)
-    {
-      out << "|";
-
-      constexpr_for<0, sizeof...(Ts), 1>([&](auto i)
-                                         {
-      static const auto x = self.template  get_nth_type<i>();
-      out << " ";
-      out <<  std::setw(5) << x.get_name();
-      out << " |"; });
-
-      out << "\n";
-      out << "|";
-      constexpr_for<0, sizeof...(Ts), 1>([&](auto i)
-                                         {
-                                           out << std::setw(5) << "-------|";
-                                         });
-      out << "\n";
-      auto size = self.size();
-      for (int i = 0; i < size; ++i)
-      {
-        auto current_element = self[i];
-        out << "|";
-        constexpr_for<0, sizeof...(Ts), 1>([&](auto i)
-                                           {
-        static const  auto x = self.template get_nth_type<i>();
-        out << " ";
-        out <<  std::setw(5) << x.get(current_element).v;
-        out << " |"; });
-        out << "\n";
-      }
-
-      return out;
-    }
-  };
-
-  template <typename... Ts>
-  dataframe(Ts &&...ts) -> dataframe<_Remove_cvref_t<Ts>...>;
-
-  template <typename T>
-  struct dataframe_maker
-  {
-  };
-
-  template <typename... T>
-  struct dataframe_maker<ntuple<T...>>
-  {
-    using type = dataframe<_Remove_cvref_t<T>...>;
-  };
-
-  template <typename F>
-  auto fill_dataframe(int index, F &&f)
-  {
-    typename dataframe_maker<decltype(f(0))>::type ret;
-    for (int i = 0; i < index; ++i)
-    {
-      ret.push_back(f(i));
-    }
-    return ret;
+  template <int N, typename... ARGS>
+  constexpr decltype(auto) get_nth( const nt::ntuple<ARGS...>& nt){ 
+    return nt::_Remove_cvref_t<nt::NthTypeOf<N, nt::_Remove_cvref_t<ARGS>...>>::get(nt);
   }
+
+  template <int N, typename... ARGS>
+  constexpr  decltype(auto) get_nth( nt::ntuple<ARGS...>& nt){ 
+    return nt::_Remove_cvref_t<nt::NthTypeOf<N, nt::_Remove_cvref_t<ARGS>...>>::get(nt);
+  }
+  
+
+  // Primary template for contains_type; defaults to false
+  template <typename T, typename Ntuple>
+  struct contains_type : std::false_type {};
+
+  // Specialization for ntuple
+  template <typename T, typename... ARGS>
+  struct contains_type<T, ntuple<ARGS...>> : std::disjunction<std::is_same<T, ARGS>...> {};
+
+  // Helper variable template
+  template <typename T, typename Ntuple>
+  constexpr bool contains_type_v = contains_type<T, Ntuple>::value;
 
 }
 
@@ -769,4 +672,42 @@ namespace nt::algorithms
   {
     return __group<nt::_Remove_cvref_t<ARGS>...>{};
   }
+
+
+
 }
+
+
+namespace nt::comparators{
+
+
+
+      struct on_common_args_t {
+
+
+        template <typename T1, typename T2>
+        constexpr static bool __comp__(T1&& t1, T2&& t2)
+        {
+          bool ret = true;
+          constexpr_for<0,  _Remove_cvref_t<T1>::__size__, 1>(
+          [&](const  auto i) {
+            using N_th_T = _Remove_cvref_t < decltype(nt::get_nth<i>(t1))>;
+            if constexpr( contains_type_v<N_th_T, _Remove_cvref_t<T2> > ) {
+              ret &= (N_th_T::get(t1) == N_th_T::get(t2));
+            }
+          }
+          );
+          return ret;
+
+        }
+
+
+        template <typename T1, typename T2>
+        constexpr bool operator()(T1&& t1, T2&& t2) const
+        {
+          return __comp__(std::forward<T1>(t1), std::forward<T2>(t2));
+        }
+      };
+      constexpr inline on_common_args_t on_common_args;
+}
+
