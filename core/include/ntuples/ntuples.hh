@@ -68,7 +68,7 @@ namespace nt {
     }
 
 private:
-  T2::operator=;
+  using T2::operator=;
   };
 
 
@@ -136,12 +136,9 @@ private:
 
     template <typename T>
     constexpr auto operator()(T&& t) const{
-      return get(std::forward<T>(t));
+      return TBase::get(std::forward<T>(t));
     }
-    template <typename T>
-    static constexpr  auto struct_maker123() {
-      return  decltype(std::declval<type>() (std::declval<type_wrap<T> >())){};
-    }
+
 
 
 
@@ -183,7 +180,7 @@ private:
     template<typename... Ts>
     ntuple(Ts&&... t1) : base_maker_t<_Remove_cvref_t<T>, T>(std::forward<Ts>(t1)) ...  {}
 
-
+ 
     template <typename T2>
     decltype(auto) operator[](const ax_name_container<T2>& t) {
       return  ax_name_container<T2>::get(*this);
@@ -267,7 +264,7 @@ private:
     out << "|";
     
     constexpr_for<0, sizeof...(Ts), 1>([&](auto i) {
-      static const auto x = self.get_nth_type<i>();
+      static const auto x = self.template  get_nth_type<i>();
       out << " ";
       out <<  std::setw(5) << x.get_name();
       out << " |";
@@ -286,7 +283,7 @@ private:
       auto current_element = self[i];
       out << "|";
       constexpr_for<0, sizeof...(Ts), 1>([&](auto i) {
-        static const  auto x = self.get_nth_type<i>();
+        static const  auto x = self.template get_nth_type<i>();
         out << " ";
         out <<  std::setw(5) << x.get(current_element).v;
         out << " |";
@@ -334,7 +331,7 @@ auto fill_dataframe(int index, F&& f) {
     auto struct_maker_template_lambda = [](auto e) constexpr { \
       using ARG_T = decltype(e);\
       if constexpr (e.N_value == nt::ax_name_container_base_const::c_struct_maker){\
-        if constexpr (!std::is_reference_v< ARG_T::type> ){\
+        if constexpr (!std::is_reference_v<typename  ARG_T::type> ){\
           struct Zt##name_ {\
            Zt##name_() {} \
            Zt##name_( const decltype(e.val) & e_): name_(e_) {} \
@@ -426,3 +423,4 @@ static  constexpr inline  auto name_ = nt::ax_name_container<__nt::zt##name_>{}
 
 #define nt_new_name_t(name_) namespace __nt{ __nt_new_axis_core(name_); } \
 using  name_ = nt::ax_name_container<__nt::zt##name_>
+
