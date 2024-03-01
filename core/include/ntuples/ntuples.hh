@@ -346,7 +346,6 @@ namespace nt
           ARGS::get(rhs)...);
     }
 
-
     inline static constexpr std::size_t __size__ = sizeof...(T);
   };
 
@@ -354,23 +353,28 @@ namespace nt
   ntuple(Ts &&...ts) -> ntuple<_Remove_cvref_t<Ts>...>;
 
   template <int N, typename... ARGS>
-  constexpr decltype(auto) get_nth( const nt::ntuple<ARGS...>& nt){ 
+  constexpr decltype(auto) get_nth(const nt::ntuple<ARGS...> &nt)
+  {
     return nt::_Remove_cvref_t<nt::NthTypeOf<N, nt::_Remove_cvref_t<ARGS>...>>::get(nt);
   }
 
   template <int N, typename... ARGS>
-  constexpr  decltype(auto) get_nth( nt::ntuple<ARGS...>& nt){ 
+  constexpr decltype(auto) get_nth(nt::ntuple<ARGS...> &nt)
+  {
     return nt::_Remove_cvref_t<nt::NthTypeOf<N, nt::_Remove_cvref_t<ARGS>...>>::get(nt);
   }
-  
 
   // Primary template for contains_type; defaults to false
   template <typename T, typename Ntuple>
-  struct contains_type : std::false_type {};
+  struct contains_type : std::false_type
+  {
+  };
 
   // Specialization for ntuple
   template <typename T, typename... ARGS>
-  struct contains_type<T, ntuple<ARGS...>> : std::disjunction<std::is_same<T, ARGS>...> {};
+  struct contains_type<T, ntuple<ARGS...>> : std::disjunction<std::is_same<T, ARGS>...>
+  {
+  };
 
   // Helper variable template
   template <typename T, typename Ntuple>
@@ -674,40 +678,58 @@ namespace nt::algorithms
   }
 
 
+  template <typename T0, typename T1, typename T2, typename Comparision_T, typename projecttion_t>
+  void join_vectors_r(T0 &ret, const T1 &t1, const T2 &t2, Comparision_T comp, projecttion_t project)
+  {
+    ret.clear();
+    for (const auto &e1 : t1)
+    {
+      for (const auto &e2 : t2)
+      {
+        if (comp(e1, e2))
+        {
+          ret.push_back(project(e1, e2));
+        }
+      }
+    }
+  }
 
+  template <typename T1, typename T2, typename Comparision_T, typename projecttion_t>
+  auto join_vectors(const T1 &t1, const T2 &t2, Comparision_T comp, projecttion_t project)
+  {
+    std::vector<decltype(project(t1[0], t2[0]))> ret;
+    join_vectors_r(ret, t1, t2, comp, project);
+    return ret;
+  }
 }
 
+namespace nt::comparators
+{
 
-namespace nt::comparators{
+  struct on_common_args_t
+  {
 
-
-
-      struct on_common_args_t {
-
-
-        template <typename T1, typename T2>
-        constexpr static bool __comp__(T1&& t1, T2&& t2)
-        {
-          bool ret = true;
-          constexpr_for<0,  _Remove_cvref_t<T1>::__size__, 1>(
-          [&](const  auto i) {
-            using N_th_T = _Remove_cvref_t < decltype(nt::get_nth<i>(t1))>;
-            if constexpr( contains_type_v<N_th_T, _Remove_cvref_t<T2> > ) {
+    template <typename T1, typename T2>
+    constexpr static bool __comp__(T1 &&t1, T2 &&t2)
+    {
+      bool ret = true;
+      constexpr_for<0, _Remove_cvref_t<T1>::__size__, 1>(
+          [&](const auto i)
+          {
+            using N_th_T = _Remove_cvref_t<decltype(nt::get_nth<i>(t1))>;
+            if constexpr (contains_type_v<N_th_T, _Remove_cvref_t<T2>>)
+            {
               ret &= (N_th_T::get(t1) == N_th_T::get(t2));
             }
-          }
-          );
-          return ret;
+          });
+      return ret;
+    }
 
-        }
-
-
-        template <typename T1, typename T2>
-        constexpr bool operator()(T1&& t1, T2&& t2) const
-        {
-          return __comp__(std::forward<T1>(t1), std::forward<T2>(t2));
-        }
-      };
-      constexpr inline on_common_args_t on_common_args;
+    template <typename T1, typename T2>
+    constexpr bool operator()(T1 &&t1, T2 &&t2) const
+    {
+      return __comp__(std::forward<T1>(t1), std::forward<T2>(t2));
+    }
+  };
+  constexpr inline on_common_args_t on_common_args;
 }
-
