@@ -1,4 +1,4 @@
-
+#pragma once
 
 
 #include <type_traits>
@@ -94,7 +94,72 @@ private:
   };
 
 
+  namespace comparators{
+        template <typename T1, typename... T_rest>
+    struct _nt_compare{
 
+      template <typename VECA_T, typename VECB_T>
+      static auto   __isLessthen(const VECA_T& vecA, const VECB_T& vecB)
+      {
+        if constexpr(sizeof...(T_rest) > 0) {
+          if (T1::get(vecA) < T1::get(vecB)) {
+            return true;
+          } else if (T1::get(vecA) > T1::get(vecB)) {
+            return false;
+          }
+          return _nt_compare<T_rest...>::template __isLessthen(vecA, vecB);
+        } else {
+          return T1::get(vecA) < T1::get(vecB);
+        }
+      }
+
+      template <typename VECA_T, typename VECB_T>
+      static auto   __isEequal(const VECA_T& vecA, const VECB_T& vecB)
+      {
+        if constexpr(sizeof...(T_rest) > 0) {
+          if (nt::_Remove_cvref_t< T1>::get(vecA) != nt::_Remove_cvref_t< T1>::get(vecB)) {
+            return false;
+          }
+          return _nt_compare<T_rest...>::template  __isEequal(vecA, vecB);
+        } else {
+          return nt::_Remove_cvref_t< T1>::get(vecA) == nt::_Remove_cvref_t< T1>::get(vecB);
+        }
+      }
+    };
+
+    template <typename... T_rest>
+    auto nt_compare(T_rest&&...){
+      return _nt_compare< nt::_Remove_cvref_t<T_rest>...>{};
+    }
+
+    template <typename... T_rest>
+    constexpr auto lessThan(T_rest&&...){
+      return [ less = _nt_compare< nt::_Remove_cvref_t<T_rest>...>{}](const auto& lhs, const auto& rhs){
+          return less.__isLessthen(lhs, rhs);
+      };
+    }
+
+    template <typename... T_rest>
+    constexpr auto lessThan(){
+      return [ less = _nt_compare< nt::_Remove_cvref_t<T_rest>...>{}](const auto& lhs, const auto& rhs){
+          return less.__isLessthen(lhs, rhs);
+      };
+    }
+
+    template <typename... T_rest>
+    constexpr auto equal(T_rest&&...){
+      return [ less = _nt_compare< nt::_Remove_cvref_t<T_rest>...>{}](const auto& lhs, const auto& rhs){
+          return less.__isEequal(lhs, rhs);
+      };
+    }
+
+    template <typename... T_rest>
+    constexpr auto equal(){
+      return [ less = _nt_compare< nt::_Remove_cvref_t<T_rest>...>{}](const auto& lhs, const auto& rhs){
+          return less.__isEequal(lhs, rhs);
+      };
+    }
+  }
 
 
   template <typename T1, typename T2>
