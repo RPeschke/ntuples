@@ -60,7 +60,29 @@ namespace nt {
       return v;
     }
 
+    friend constexpr bool operator<( const ax_type& lhs, const ax_type& rhs) {
+      return lhs.v < rhs.v;
+    }
+    
+    friend constexpr bool operator<=( const ax_type& lhs, const ax_type& rhs) {
+      return lhs.v <= rhs.v;
+    }
 
+    friend constexpr bool operator==( const ax_type& lhs, const ax_type& rhs) {
+      return lhs.v == rhs.v;
+    }
+
+    friend constexpr bool operator!=( const ax_type& lhs, const ax_type& rhs) {
+      return lhs.v != rhs.v;
+    }
+
+    friend constexpr bool operator>=( const ax_type& lhs, const ax_type& rhs) {
+      return lhs.v >= rhs.v;
+    }
+
+    friend constexpr bool operator>( const ax_type& lhs, const ax_type& rhs) {
+      return lhs.v > rhs.v;
+    }
 
     friend std::ostream& operator<< (std::ostream& out, const ax_type& self) {
       out << self.get_name() << " : " << self.v;
@@ -123,7 +145,23 @@ private:
       using  getter1 = decltype(std::declval<type>() (std::declval<type_wrap<T&, c_getter1> >()));
       return getter1::get(t);
     }
-    static auto get_name() {
+
+    template <typename T>
+    static constexpr decltype(auto) get(const T& t) {
+      using  getter1 = decltype(std::declval<type>() (std::declval<type_wrap<const T&, c_getter1> >()));
+      return getter1::get(t);
+    }
+    template <typename T>
+    static constexpr decltype(auto) get_value(const T& t) {
+      return ax_name_container_base::get(t).v;
+    }
+
+    template <typename T>
+    static constexpr decltype(auto) get_value(T& t) {
+      return ax_name_container_base::get(t).v;
+    }
+
+    static constexpr auto get_name() {
       using  name_getter = decltype(std::declval<type>() (std::declval<type_wrap<int, c_get_name> >()));
       return name_getter::get_name();
     }
@@ -135,11 +173,20 @@ private:
     constexpr ax_name_container() = default;
 
     template <typename T>
-    constexpr auto operator()(T&& t) const{
-      return TBase::get(std::forward<T>(t));
+    constexpr decltype(auto) operator()(T&& t) const{
+      return TBase::get(t);
     }
 
 
+    template <typename T>
+    static constexpr decltype(auto) get_value(T& t) {
+      return TBase::get(t).v;
+    }
+
+    template <typename T>
+    static constexpr decltype(auto) get_value(const T& t) {
+      return TBase::get(t).v;
+    }
 
 
 
@@ -201,6 +248,14 @@ private:
 
       return out;
     }
+
+    template <typename... ARGS>
+    auto operator|(const ntuple<ARGS...>& rhs) const{
+      return ntuple<T..., ARGS...>( 
+        T::get(*this)...,
+        ARGS::get(rhs)...
+      );
+    }
   };
 
   template <typename ... Ts>
@@ -237,6 +292,15 @@ private:
 
     [](auto...) {}
     ( Ts::get(*this).emplace_back(Ts::get(t)) ...);
+
+  }
+
+  template <typename... T>
+  void emplace_back(T&&... t) {
+    static_assert(sizeof...(t) == sizeof...(Ts), "\n==============missmatched amount of arguments=================\n" );
+    [](auto...) {}
+    (T::get(*this).emplace_back(std::forward<T>(t) ) ...);
+
 
   }
 
@@ -362,7 +426,7 @@ auto fill_dataframe(int index, F&& f) {
         return getter_t{}; \
       } else if constexpr (e.N_value == nt::ax_name_container_base_const::c_get_name ){\
         struct name_getter_t {\
-          static auto get_name() {\
+          static constexpr auto get_name() {\
             return #name_;\
           }\
         };\
@@ -402,6 +466,10 @@ auto fill_dataframe(int index, F&& f) {
     } \
     template <typename T> \
     static constexpr auto& get(T& t) { \
+      return  t.name_; \
+    } \
+    template <typename T> \
+    static constexpr const auto& get(const T& t) { \
       return  t.name_; \
     } \
   }
