@@ -515,31 +515,12 @@ namespace nt
 namespace nt::algorithms
 {
 
-  template <typename FUNC_T>
-  auto fill_vector(size_t entries, FUNC_T &&func)
-  {
-    std::vector<decltype(func(size_t(0)))> ret;
-    ret.reserve(entries);
-    for (size_t i = 0; i < entries; ++i)
-    {
-      ret.push_back(func(i));
-    }
-    return ret;
-  }
-  struct identity
-  {
-    template <typename T>
-    constexpr T &&operator()(T &&t) const noexcept
-    {
-      return (T &&)t;
-    }
-  };
 
-  template <typename T1, typename T2, typename Prj_T = identity>
+  template <typename T1, typename T2, typename Prj_T >
   struct __range__impl_prj
   {
-    __range__impl_prj(T1 &&b, T2 &&e, Prj_T &&prj = identity{}) : m_begin(std::move(b), prj), m_end(std::move(e), prj) {}
-    __range__impl_prj(const T1 &b, const T2 &e, Prj_T &&prj = identity{}) : m_begin(b, prj), m_end(e, prj) {}
+    __range__impl_prj(T1 &&b, T2 &&e, Prj_T &&prj) : m_begin(std::move(b), prj), m_end(std::move(e), prj) {}
+    __range__impl_prj(const T1 &b, const T2 &e, Prj_T &&prj ) : m_begin(b, prj), m_end(e, prj) {}
     auto begin() const
     {
       return m_begin;
@@ -581,17 +562,23 @@ namespace nt::algorithms
     } m_begin, m_end;
   };
 
-  template <typename T1, typename T2>
-  auto __range__(T1 &&b, T2 &&e)
-  {
-    return __range__impl_prj<nt::_Remove_cvref_t<T1>, nt::_Remove_cvref_t<T2>>(std::forward<T1>(b), std::forward<T2>(e), {});
-  }
+
   template <typename T1, typename T2, typename PRJ>
   auto __range__(T1 &&b, T2 &&e, PRJ &&prj)
   {
     return __range__impl_prj<nt::_Remove_cvref_t<T1>, nt::_Remove_cvref_t<T2>, nt::_Remove_cvref_t<PRJ>>(std::forward<T1>(b), std::forward<T2>(e),
                                                                                                          std::forward<PRJ>(prj));
   }
+
+  template <typename T1, typename T2>
+  auto __range__(T1 &&b, T2 &&e)
+  {
+    return __range__(
+      std::forward<T1>(b), std::forward<T2>(e), 
+      [](auto&& e ) -> decltype(auto) {  return e;}
+    );
+  }
+
 
   template <typename... T>
   struct __group
@@ -678,29 +665,7 @@ namespace nt::algorithms
   }
 
 
-  template <typename T0, typename T1, typename T2, typename Comparision_T, typename projecttion_t>
-  void join_vectors_r(T0 &ret, const T1 &t1, const T2 &t2, Comparision_T comp, projecttion_t project)
-  {
-    ret.clear();
-    for (const auto &e1 : t1)
-    {
-      for (const auto &e2 : t2)
-      {
-        if (comp(e1, e2))
-        {
-          ret.push_back(project(e1, e2));
-        }
-      }
-    }
-  }
 
-  template <typename T1, typename T2, typename Comparision_T, typename projecttion_t>
-  auto join_vectors(const T1 &t1, const T2 &t2, Comparision_T comp, projecttion_t project)
-  {
-    std::vector<decltype(project(t1[0], t2[0]))> ret;
-    join_vectors_r(ret, t1, t2, comp, project);
-    return ret;
-  }
 }
 
 namespace nt::comparators
