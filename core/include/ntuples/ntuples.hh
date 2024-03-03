@@ -41,19 +41,30 @@ namespace nt
     constexpr ax_type() {}
     constexpr ax_type(T1 t1) : v(std::move(t1)) {}
     constexpr ax_type operator=(T1 &&t1) const { return ax_type(std::move(t1)); }
-    constexpr ax_type operator=(const T1 &t1) const { return ax_type(std::move(t1)); }
-    constexpr ax_type operator()(T1 &&t1) const { return ax_type(std::move(t1)); }
-    constexpr ax_type operator()(const T1 &&t1) const { return ax_type(t1); }
+    constexpr ax_type operator=(const T1 &t1) const { return ax_type(t1); }
+    
+    template <typename T_IN>
+    constexpr ax_type operator()(T_IN &&t1) const { return ax_type(std::move( static_cast<T1>(t1) )); }
+    
+    template <typename T_IN>
+    constexpr ax_type operator()(const T_IN& t1) const { return ax_type(static_cast<T1>(t1)); }
     constexpr ax_type operator=(T1 &&t1)
     {
       v = std::move(t1);
       return *this;
     }
-    constexpr ax_type operator=(const T1 &t1)
+    constexpr ax_type& operator=(const T1 &t1)
     {
       v = t1;
       return *this;
     }
+
+    template <typename T>
+    constexpr ax_type& operator=(const ax_type<T1, T>& t1) {
+      v = t1.v;
+      return *this;
+    }
+
     using struct_maker = T2;
     using data_t = T1;
 
@@ -62,35 +73,114 @@ namespace nt
       return v;
     }
 
-    friend constexpr bool operator<(const ax_type &lhs, const ax_type &rhs)
+    operator const T1() const
+    {
+      return v;
+    }
+
+    template <typename T_RHS>
+    friend constexpr bool operator<(const ax_type& lhs,  const ax_type<T1, T_RHS>& rhs)
     {
       return lhs.v < rhs.v;
     }
 
-    friend constexpr bool operator<=(const ax_type &lhs, const ax_type &rhs)
+    template <typename T_RHS>
+    friend constexpr bool operator<=(const ax_type& lhs,  const ax_type<T1, T_RHS>& rhs)
     {
       return lhs.v <= rhs.v;
     }
 
-    friend constexpr bool operator==(const ax_type &lhs, const ax_type &rhs)
+    template <typename T_RHS>
+    friend constexpr bool operator==(const ax_type& lhs,  const ax_type<T1, T_RHS>& rhs)
     {
       return lhs.v == rhs.v;
     }
 
-    friend constexpr bool operator!=(const ax_type &lhs, const ax_type &rhs)
+    template <typename T_RHS>
+    friend constexpr bool operator!=(const ax_type& lhs, const ax_type<T1, T_RHS>& rhs)
     {
       return lhs.v != rhs.v;
     }
 
-    friend constexpr bool operator>=(const ax_type &lhs, const ax_type &rhs)
+    template <typename T_RHS>
+    friend constexpr bool operator>=(const ax_type& lhs, const ax_type<T1, T_RHS>& rhs)
     {
       return lhs.v >= rhs.v;
     }
 
-    friend constexpr bool operator>(const ax_type &lhs, const ax_type &rhs)
+    template < typename T_RHS>
+    friend constexpr bool operator>(const ax_type& lhs, const ax_type<T1, T_RHS>& rhs)
     {
       return lhs.v > rhs.v;
     }
+
+
+
+
+    friend constexpr bool operator<(const ax_type& lhs, const T1& rhs)
+    {
+      return lhs.v < rhs;
+    }
+    friend constexpr bool operator<(const T1 lhs, const ax_type&  rhs)
+    {
+      return lhs < rhs.v;
+    }
+
+
+    friend constexpr bool operator<=(const ax_type& lhs, const T1& rhs)
+    {
+      return lhs.v <= rhs;
+    }
+
+    friend constexpr bool operator<=(const T1& lhs, const  ax_type&   rhs)
+    {
+      return lhs <= rhs.v;
+    }
+
+
+    friend constexpr bool operator==(const ax_type& lhs, const T1& rhs)
+    {
+      return lhs.v == rhs;
+    }
+
+    friend constexpr bool operator==(const T1& lhs, const  ax_type& rhs)
+    {
+      return lhs == rhs.v;
+    }
+
+    
+    friend constexpr bool operator!=(const ax_type& lhs, const T1& rhs)
+    {
+      return lhs.v != rhs;
+    }
+
+    friend constexpr bool operator!=(const T1& lhs, const  ax_type& rhs)
+    {
+      return lhs != rhs.v;
+    }
+
+    
+    friend constexpr bool operator>=(const ax_type& lhs, const T1& rhs)
+    {
+      return lhs.v >= rhs;
+    }
+
+    friend constexpr bool operator>=(const T1& lhs, const  ax_type& rhs)
+    {
+      return lhs >= rhs.v;
+    }
+
+    
+    friend constexpr bool operator>(const ax_type& lhs, const T1& rhs)
+    {
+      return lhs.v > rhs;
+    }
+
+    friend constexpr bool operator>(const T1& lhs, const  ax_type& rhs)
+    {
+      return lhs > rhs.v;
+    }
+
 
     friend std::ostream &operator<<(std::ostream &out, const ax_type &self)
     {
@@ -315,8 +405,11 @@ namespace nt
   struct ntuple : base_maker_t<_Remove_cvref_t<T>, T>...
   {
 
+
+    constexpr ntuple() : base_maker_t<_Remove_cvref_t<T>, T>(_Remove_cvref_t<T>{})... {}
+
     template <typename... Ts>
-    ntuple(Ts &&...t1) : base_maker_t<_Remove_cvref_t<T>, T>(std::forward<Ts>(t1))... {}
+    constexpr ntuple(Ts &&...t1) : base_maker_t<_Remove_cvref_t<T>, T>(std::forward<Ts>(t1))... {}
 
     template <typename T2>
     decltype(auto) operator[](const ax_name_container<T2> &t)
@@ -346,6 +439,11 @@ namespace nt
           ARGS::get(rhs)...);
     }
 
+
+    friend constexpr bool operator<(const ntuple& lhs, const ntuple& rhs) {
+      static constexpr auto lt =  comparators::lessThan<T...>();
+      return lt(lhs, rhs);
+    }
     inline static constexpr std::size_t __size__ = sizeof...(T);
   };
 
@@ -391,10 +489,10 @@ namespace nt
       {                                                                           \
         struct Zt##name_                                                          \
         {                                                                         \
-          Zt##name_() {}                                                          \
-          Zt##name_(const decltype(e.val) &e_) : name_(e_) {}                     \
-          Zt##name_(decltype(e.val) &e_) : name_(e_) {}                           \
-          Zt##name_(decltype(e.val) &&e_) : name_(std::move(e_)) {}               \
+          constexpr Zt##name_() {}                                                          \
+          constexpr Zt##name_(const decltype(e.val) &e_) : name_(e_) {}                     \
+          constexpr Zt##name_(decltype(e.val) &e_) : name_(e_) {}                           \
+          constexpr Zt##name_(decltype(e.val) &&e_) : name_(std::move(e_)) {}               \
           decltype(e.val) name_;                                                  \
           decltype(e.val) value() const                                           \
           {                                                                       \
@@ -458,9 +556,9 @@ namespace nt
     template <typename T>                                 \
     struct type_wrap                                      \
     {                                                     \
-      type_wrap() {}                                      \
+      constexpr type_wrap() {}                                      \
       template <typename T1>                              \
-      type_wrap(T1 &&e_) : name_(std::forward<T1>(e_)) {} \
+      constexpr type_wrap(T1 &&e_) : name_(std::forward<T1>(e_)) {} \
       T name_;                                            \
     };                                                    \
     template <typename Data_T>                            \
@@ -579,6 +677,13 @@ namespace nt::algorithms
     );
   }
 
+  template <typename VEC_T, typename PRJ>
+  auto project(VEC_T&& vec, PRJ&& prj)
+  {
+    return __range__(vec.begin(), vec.end(), std::forward<PRJ>(prj));
+  }
+
+
 
   template <typename... T>
   struct __group
@@ -665,8 +770,17 @@ namespace nt::algorithms
   }
 
 
-
+  template <typename T> 
+  constexpr auto get_default_element(T&& t) {
+    return nt::_Remove_cvref_t<decltype(t[0])>{};
+  }
 }
+
+
+#define nt_group(...) [](){ using T = decltype(             \
+                    nt::algorithms::group( __VA_ARGS__ ) ); \
+                    static constexpr T t{};                 \
+                    return t; }()
 
 namespace nt::comparators
 {

@@ -39,4 +39,22 @@ namespace nt::algorithms
     join_vectors_r(ret, t1, t2, comp, project);
     return ret;
   }
+
+  template <typename CONTAINER_T>
+  void sort(CONTAINER_T& container)
+  {
+    std::sort(container.begin(), container.end());
+  }
+
+
+  template <typename CONTAINER_T, typename OP_T>
+  auto count_if(const  CONTAINER_T& container, OP_T op)
+  {
+    int i = 0;
+    for (const auto& e : container)
+      if (op(e))
+        ++i;
+    return i;
+  }
+
 }
