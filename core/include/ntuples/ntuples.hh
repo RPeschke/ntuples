@@ -396,15 +396,23 @@ namespace nt
   template <typename T, typename data_T>
   using base_maker_t = typename base_maker<T, data_T>::type;
 
+
+
+  template <typename T>
+  using ntuple_base_t = base_maker_t<_Remove_cvref_t<T>, T>;
+
   template <typename... T>
-  struct ntuple : base_maker_t<_Remove_cvref_t<T>, T>...
+  struct ntuple : ntuple_base_t<T>...
   {
+    constexpr ntuple(const ntuple& rhs) = default;
+    constexpr ntuple& operator=(const ntuple& rhs) = default;
+    constexpr ntuple(const T& ...t1) : ntuple_base_t<T>(t1)... {}
 
 
-    constexpr ntuple() : base_maker_t<_Remove_cvref_t<T>, T>(_Remove_cvref_t<T>{})... {}
+    constexpr ntuple() :  ntuple_base_t<T>(_Remove_cvref_t<T>{})... {}
 
-    template <typename... Ts>
-    constexpr ntuple(Ts &&...t1) : base_maker_t<_Remove_cvref_t<T>, T>(std::forward<Ts>(t1))... {}
+    template <typename... Ts, typename = std::enable_if_t<(sizeof...(Ts) != 1)> > 
+    constexpr ntuple(Ts &&...t1) : ntuple_base_t<T>(std::forward<Ts>(t1))... {}
 
     template <typename T2>
     decltype(auto) operator[](const ax_name_container<T2> &t)

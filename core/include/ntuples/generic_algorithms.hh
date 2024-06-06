@@ -74,4 +74,22 @@ namespace nt::algorithms
     return i;
   }
 
+  template <typename VEC_T, typename FILTER_T>
+  void filter(VEC_T& vec, FILTER_T&& f) {
+    auto removeIt = std::remove_if(vec.begin(), vec.end(), [&](auto&& e) {return !f(e); });
+    vec.erase(removeIt, vec.end());
+
+  }
+
+  template <typename VEC_T, typename FILTER_T>
+  auto filter_copy(const VEC_T& vec, FILTER_T&& f) {
+    VEC_T ret;
+    ret.reserve(vec.size());
+    for (const auto& e:vec) {
+      if (f(e)) {
+        ret.push_back(e);
+      }
+    }
+    return ret;
+  }
 }
