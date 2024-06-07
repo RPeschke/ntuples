@@ -4,6 +4,18 @@
 namespace nt::algorithms
 {
 
+  template <typename VEC, typename FUNC_T>
+  auto add_column(const VEC& vec, FUNC_T&& func)
+  {
+    std::vector<decltype(vec[0] | func(vec[0]))> ret;
+    ret.reserve(vec.size());
+    for (const auto& e: vec)
+    {
+      ret.push_back( e | func(e));
+    }
+    return ret;
+  }
+
   template <typename FUNC_T>
   auto fill_vector(size_t entries, FUNC_T &&func)
   {
@@ -46,6 +58,11 @@ namespace nt::algorithms
     std::sort(container.begin(), container.end());
   }
 
+  template <typename CONTAINER_T, typename COMP_T>
+  void sort(CONTAINER_T& container, COMP_T&& comp)
+  {
+    std::sort(container.begin(), container.end(), comp);
+  }
 
   template <typename CONTAINER_T, typename OP_T>
   auto count_if(const  CONTAINER_T& container, OP_T op)
@@ -57,4 +74,22 @@ namespace nt::algorithms
     return i;
   }
 
+  template <typename VEC_T, typename FILTER_T>
+  void filter(VEC_T& vec, FILTER_T&& f) {
+    auto removeIt = std::remove_if(vec.begin(), vec.end(), [&](auto&& e) {return !f(e); });
+    vec.erase(removeIt, vec.end());
+
+  }
+
+  template <typename VEC_T, typename FILTER_T>
+  auto filter_copy(const VEC_T& vec, FILTER_T&& f) {
+    VEC_T ret;
+    ret.reserve(vec.size());
+    for (const auto& e:vec) {
+      if (f(e)) {
+        ret.push_back(e);
+      }
+    }
+    return ret;
+  }
 }
