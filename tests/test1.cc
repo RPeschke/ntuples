@@ -2,6 +2,12 @@
 #include "ntuples/ntuples.hh"
 #include "ntuples/dataframe.hh"
 #include "ntuples/generic_algorithms.hh"
+#include "ntuples/macro_ax_maker.hh"
+#include "ntuples/macro_comperator.hh"
+#include "ntuples/macro_groupby.hh"
+#include "ntuples/macro_nt_new_axis.hh"
+#include "ntuples/comparators.hh"
+
 
 
   #include <algorithm>
