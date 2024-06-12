@@ -18,12 +18,17 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+
+#include <iostream>
+#include <ranges>
+#include <algorithm>
+#include <numeric> // for std::iota
   
 
 using namespace nt::algorithms;
 
   ax_new_axis(subdetector, int());
-  nt_new_axis_c(test1 , 123);
+  nt_new_axis_c(test1 , int());
   
 
   
@@ -86,6 +91,72 @@ constexpr auto get_nth_type( const nt::ntuple<ARGS...>& )
 
 
 int main(int argv, char** argc) {
+
+
+  
+
+
+
+    auto result = 
+          std::ranges::iota_view{0}
+        | std::ranges::views::filter([](int n) { 
+            return n % 2 == 0;
+          })  // Filter even numbers
+        | std::ranges::views::transform([](int n) { 
+            return nt::ntuple{
+                ax_maker(member1) = n
+              };
+
+          })   
+        | std::ranges::views::transform([](auto&& nt1 ) {
+            return nt1 | nt::ntuple{              
+                ax_maker(n2) =  nt1.member1 * nt1.member1,
+                ax_maker(n3) =  nt1.member1 * nt1.member1 * nt1.member1,
+                test1 = 1312
+              };
+        })
+        | std::ranges::views::take(10);
+        
+    // Print the results
+    for (auto&& n : result  ) {
+        
+        std::cout << nt::get_nth<1>(n) << std::endl;
+        std::cout << n << std::endl;
+
+        std::cout << nt::get_nth<1>(n).v << std::endl;
+    }
+    std::cout << std::endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
 
   auto df11312 = fill_vector(10, [](int i){
@@ -217,6 +288,8 @@ int main(int argv, char** argc) {
       ax_maker(ex3) = i * i * i
     );
     });
+
+
 
 
   std::cout << "\n\n" << std::endl;
