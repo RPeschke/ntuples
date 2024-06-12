@@ -444,7 +444,7 @@ namespace nt
 
 
     friend constexpr bool operator<(const ntuple& lhs, const ntuple& rhs) {
-      static constexpr auto lt =  comparators::lessThan<T...>();
+      constexpr auto lt =  comparators::lessThan<T...>();
       return lt(lhs, rhs);
     }
     inline static constexpr std::size_t __size__ = sizeof...(T);

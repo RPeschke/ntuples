@@ -89,9 +89,9 @@ namespace nt{
       {
         auto current_element = self[i];
         out << "|";
-        constexpr_for<0, sizeof...(Ts), 1>([&](auto i)
+        constexpr_for<0, sizeof...(Ts), 1>([&](auto ntuple_index)
                                            {
-        static const  auto x = self.template get_nth_type<i>();
+        static const  auto x = self.template get_nth_type<ntuple_index>();
         out << " ";
         out <<  std::setw(5) << x.get(current_element).v;
         out << " |"; });
