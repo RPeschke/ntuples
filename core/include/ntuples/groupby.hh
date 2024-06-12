@@ -100,7 +100,6 @@ namespace nt::algorithms
       };
       
       while (lt(min_element, max_element)) {
-        std::cout << min_element << std::endl;
         process();
      
       }
