@@ -23,7 +23,11 @@
 #include <ranges>
 #include <algorithm>
 #include <numeric> // for std::iota
-  
+
+#include "ntuples/std_adapter.hh"
+
+
+
 
 using namespace nt::algorithms;
 
@@ -223,9 +227,32 @@ int main(int argv, char** argc) {
     }
     );
 
- 
+ auto nt1 = nt::ntuple{
+      subdetector = 1  ,
+      sector{123},
+      sector1 = std::string("asd"),
+      axis = "4655",
+      plane() = 1231,
+      ax_maker(ex1) = 546
+    };
+  //std::cout << nt::get<0>(nt1) << std::endl;
+
+  /*
+  auto [xx1 , xx2] = [&](){
+    return nt::ntuple{
+      subdetector = 1  ,
+      sector{123}
+    };
+  }();
+  std::cout<<xx1<< ",   " << xx2 <<'\n';
+*/
+auto temp = nt::ntuple{ subdetector = 1, sector{123} };
+auto [xx1, xx2] = temp;
+std::cout<<xx1<< ",   " << xx2 <<'\n';
+
   std::cout << (test1 = 123211) << std::endl;
   std::cout << axis(klm_nameing[0]) << std::endl;
+
 
   klm_nameing.emplace_back(
       subdetector = 456 ,

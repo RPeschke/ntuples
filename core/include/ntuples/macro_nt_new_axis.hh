@@ -23,14 +23,8 @@
       return #name_;                                      \
     }                                                     \
     template <typename T>                                 \
-    static constexpr auto &get(T &t)                      \
-    {                                                     \
-      return t.name_;                                     \
-    }                                                     \
-    template <typename T>                                 \
-    static constexpr const auto &get(const T &t)          \
-    {                                                     \
-      return t.name_;                                     \
+    static constexpr decltype(auto) get(T&& t) {          \
+      return std::forward<T>(t).name_;                    \
     }                                                     \
   }
 

@@ -179,7 +179,7 @@ namespace nt
 
     friend std::ostream &operator<<(std::ostream &out, const ax_type &self)
     {
-      out << self.get_name() << " : " << self.v;
+      out << self.get_name() << ": " << self.v;
       return out;
     }
 
