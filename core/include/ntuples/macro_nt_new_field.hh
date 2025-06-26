@@ -3,61 +3,61 @@
 #include "ntuples/ntuples.hh"
 
 
-// ax_new_axis(name_1231, 123);
 
-#define __nt_new_axis_core(name_)                         \
-  struct zt##name_                                        \
+
+#define __nt_new_field_core(filed_name)                         \
+  struct zt##filed_name                                        \
   {                                                       \
     template <typename T>                                 \
     struct type_wrap                                      \
     {                                                     \
       constexpr type_wrap() {}                                      \
       template <typename T1>                              \
-      constexpr type_wrap(T1 &&e_) : name_(std::forward<T1>(e_)) {} \
-      T name_;                                            \
+      constexpr type_wrap(T1 &&e_) : filed_name(std::forward<T1>(e_)) {} \
+      T filed_name;                                            \
     };                                                    \
     template <typename Data_T>                            \
     using base_t = type_wrap<Data_T>;                     \
     static auto get_name()                                \
     {                                                     \
-      return #name_;                                      \
+      return #filed_name;                                      \
     }                                                     \
     template <typename T>                                 \
     static constexpr decltype(auto) get(T&& t) {          \
-      return std::forward<T>(t).name_;                    \
+      return std::forward<T>(t).filed_name;                    \
     }                                                     \
   }
 
-#define __nt_new_axis(qualifier, name_, value) \
+#define __nt_new_field(qualifier, filed_name, value) \
   namespace __nt                               \
   {                                            \
-    __nt_new_axis_core(name_);                 \
+    __nt_new_field_core(filed_name);                 \
   }                                            \
-  qualifier name_ = (nt::ax_name_container<__nt::zt##name_>{} = value)
+  qualifier filed_name = (nt::ax_name_container<__nt::zt##filed_name>{} = value)
 
-#define nt_new_axis(name_, value) __nt_new_axis(static constexpr inline auto, name_, value)
-#define nt_new_axis_c(name_, value) __nt_new_axis(static const inline auto, name_, value)
+#define nt_new_field(filed_name, value) __nt_new_field(static constexpr inline auto, filed_name, value)
+#define nt_new_field_c(filed_name, value) __nt_new_field(static const inline auto, filed_name, value)
 
-#define nt_new_axis_t(name_, value) \
+#define nt_new_field_t(filed_name, value) \
   namespace __nt                    \
   {                                 \
-    __nt_new_axis_core(name_);      \
+    __nt_new_field_core(filed_name);      \
   }                                 \
-  using name_ = decltype(nt::ax_name_container<__nt::zt##name_>{} = value)
+  using filed_name = decltype(nt::ax_name_container<__nt::zt##filed_name>{} = value)
 
-#define nt_new_name(name_)     \
+#define nt_new_field_name(filed_name)     \
   namespace __nt               \
   {                            \
-    __nt_new_axis_core(name_); \
+    __nt_new_field_core(filed_name); \
   }                            \
-  static constexpr inline auto name_ = nt::ax_name_container<__nt::zt##name_> {}
+  static constexpr inline auto filed_name = nt::ax_name_container<__nt::zt##filed_name> {}
 
-#define nt_new_name_t(name_)   \
+#define nt_new_field_name_t(filed_name)   \
   namespace __nt               \
   {                            \
-    __nt_new_axis_core(name_); \
+    __nt_new_field_core(filed_name); \
   }                            \
-  using name_ = nt::ax_name_container<__nt::zt##name_>
+  using filed_name = nt::ax_name_container<__nt::zt##filed_name>
 
 
 

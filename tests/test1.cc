@@ -2,10 +2,10 @@
 #include "ntuples/ntuples.hh"
 #include "ntuples/dataframe.hh"
 #include "ntuples/generic_algorithms.hh"
-#include "ntuples/macro_ax_maker.hh"
+#include "ntuples/macro_nt_field.hh"
 #include "ntuples/macro_comperator.hh"
 #include "ntuples/macro_groupby.hh"
-#include "ntuples/macro_nt_new_axis.hh"
+#include "ntuples/macro_nt_new_field.hh"
 #include "ntuples/comparators.hh"
 
 
@@ -31,22 +31,22 @@
 
 using namespace nt::algorithms;
 
-  ax_new_axis(subdetector, int());
-  nt_new_axis_c(test1 , int());
+  ax_field_c(subdetector, int());
+  nt_new_field_c(test1 , int());
   
 
   
 
-//  nt_new_axis_t(sector , int() );
-  //namespace __nt{       __nt_new_axis_core( sector); static const  auto s = nt::ax_name_container<ztsector>{} = int();       } 
+//  nt_new_field_t(sector , int() );
+  //namespace __nt{       __nt_new_field_core( sector); static const  auto s = nt::ax_name_container<ztsector>{} = int();       } 
   //using sector = decltype( __nt::s );
-  nt_new_axis_t(sector , int{});
-  nt_new_axis_c(sector1, std::string());
+  nt_new_field_t(sector , int{});
+  nt_new_field_c(sector1, std::string());
 
   using ex1 = decltype( sector1 );
 
-  nt_new_name(axis);
-  nt_new_name_t(plane);
+  nt_new_field_name(axis);
+  nt_new_field_name_t(plane);
 
 
 template <typename T>
@@ -108,14 +108,14 @@ int main(int argv, char** argc) {
           })  // Filter even numbers
         | std::ranges::views::transform([](int n) { 
             return nt::ntuple{
-                ax_maker(member1) = n
+                nt_field(member1) = n
               };
 
           })   
         | std::ranges::views::transform([](auto&& nt1 ) {
             return nt1 | nt::ntuple{              
-                ax_maker(n2) =  nt1.member1 * nt1.member1,
-                ax_maker(n3) =  nt1.member1 * nt1.member1 * nt1.member1,
+                nt_field(n2) =  nt1.member1 * nt1.member1,
+                nt_field(n3) =  nt1.member1 * nt1.member1 * nt1.member1,
                 test1 = 1312
               };
         })
@@ -168,7 +168,7 @@ int main(int argv, char** argc) {
     return nt::ntuple{
       subdetector = i/3 ,
       sector{i/2},
-      ax_maker(ex1) = 546
+      nt_field(ex1) = 546
     };
 
   });
@@ -209,7 +209,7 @@ int main(int argv, char** argc) {
 
       axis = "4655",
       plane() = 1231,
-      ax_maker(ex1) = 546
+      nt_field(ex1) = 546
   };
 
   auto nt321424 = n1 | n2 ;
@@ -222,7 +222,7 @@ int main(int argv, char** argc) {
       sector1 = std::string("asd"),
       axis = "4655",
       plane() = 1231,
-      ax_maker(ex1) = 546
+      nt_field(ex1) = 546
     };
     }
     );
@@ -233,7 +233,7 @@ int main(int argv, char** argc) {
       sector1 = std::string("asd"),
       axis = "4655",
       plane() = 1231,
-      ax_maker(ex1) = 546
+      nt_field(ex1) = 546
     };
   //std::cout << nt::get<0>(nt1) << std::endl;
 
@@ -260,9 +260,9 @@ std::cout<<xx1<< ",   " << xx2 <<'\n';
       sector1 = std::string("asd"),
       axis = "4655",
       plane() = 1231,
-      ax_maker(ex1) = 546
+      nt_field(ex1) = 546
   );
-  auto x = ax_maker(ex1) = 456;
+  auto x = nt_field(ex1) = 456;
   const auto x1 = klm_nameing[0];
 
   std::cout << x1 << std::endl;
@@ -276,10 +276,10 @@ std::cout<<xx1<< ",   " << xx2 <<'\n';
 
 
 
-  auto x123123 = ax_maker(ex6) = std::string("asd");
+  auto x123123 = nt_field(ex6) = std::string("asd");
   //x123123 = "asdaswqe";
 
-  auto x123 = ax_maker(ex6) = 21321;
+  auto x123 = nt_field(ex6) = 21321;
 
 
   auto df   = nt::dataframe<decltype(x123)>();
@@ -289,7 +289,7 @@ std::cout<<xx1<< ",   " << xx2 <<'\n';
 
 
   auto nt3 = nt::ntuple(x123,
-    ax_maker(ex7) = 64
+    nt_field(ex7) = 64
   );
   std::cout << nt3 << std::endl;
   std::cout << nt3[df.ex6] << std::endl;
@@ -310,9 +310,9 @@ std::cout<<xx1<< ",   " << xx2 <<'\n';
 
   auto df1 = nt::fill_dataframe(100, [](int i) {
     return nt::ntuple(
-      ax_maker(ex1) = i,
-      ax_maker(ex2) = i * i,
-      ax_maker(ex3) = i * i * i
+      nt_field(ex1) = i,
+      nt_field(ex2) = i * i,
+      nt_field(ex3) = i * i * i
     );
     });
 

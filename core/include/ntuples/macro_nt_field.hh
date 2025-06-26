@@ -3,39 +3,39 @@
 #include "ntuples/ntuples.hh"
 
 
-#define ax_maker(name_) []() constexpr {                                          \
+#define nt_field(field_name) []() constexpr {                                          \
   auto struct_maker_template_lambda = [](auto e) constexpr {                      \
     using ARG_T = decltype(e);                                                    \
     if constexpr (e.N_value == nt::ax_name_container_base_const::c_struct_maker)  \
     {                                                                             \
       if constexpr (!std::is_reference_v<typename ARG_T::type>)                   \
       {                                                                           \
-        struct Zt##name_                                                          \
+        struct Zt##field_name                                                          \
         {                                                                         \
-          constexpr Zt##name_() {}                                                          \
-          constexpr Zt##name_(const decltype(e.val) &e_) : name_(e_) {}                     \
-          constexpr Zt##name_(decltype(e.val) &e_) : name_(e_) {}                           \
-          constexpr Zt##name_(decltype(e.val) &&e_) : name_(std::move(e_)) {}               \
-          decltype(e.val) name_;                                                  \
+          constexpr Zt##field_name() {}                                                          \
+          constexpr Zt##field_name(const decltype(e.val) &e_) : field_name(e_) {}                     \
+          constexpr Zt##field_name(decltype(e.val) &e_) : field_name(e_) {}                           \
+          constexpr Zt##field_name(decltype(e.val) &&e_) : field_name(std::move(e_)) {}               \
+          decltype(e.val) field_name;                                                  \
           decltype(e.val) value() const                                           \
           {                                                                       \
-            return name_;                                                         \
+            return field_name;                                                         \
           }                                                                       \
         };                                                                        \
-        return nt::type_container<Zt##name_>{};                                   \
+        return nt::type_container<Zt##field_name>{};                                   \
       }                                                                           \
       else                                                                        \
       {                                                                           \
-        struct Zt##name_                                                          \
+        struct Zt##field_name                                                          \
         {                                                                         \
-          Zt##name_(decltype(e.val) e_) : name_(e_) {}                            \
-          decltype(e.val) name_;                                                  \
+          Zt##field_name(decltype(e.val) e_) : field_name(e_) {}                            \
+          decltype(e.val) field_name;                                                  \
           decltype(e.val) value() const                                           \
           {                                                                       \
-            return name_;                                                         \
+            return field_name;                                                         \
           }                                                                       \
         };                                                                        \
-        return nt::type_container<Zt##name_>{};                                   \
+        return nt::type_container<Zt##field_name>{};                                   \
       }                                                                           \
     }                                                                             \
     else if constexpr (e.N_value == nt::ax_name_container_base_const::c_getter1)  \
@@ -44,7 +44,7 @@
       {                                                                           \
         static constexpr auto &get(decltype(e.val) x)                             \
         {                                                                         \
-          return x.name_;                                                         \
+          return x.field_name;                                                         \
         }                                                                         \
       };                                                                          \
       return getter_t{};                                                          \
@@ -55,7 +55,7 @@
       {                                                                           \
         static constexpr auto get_name()                                          \
         {                                                                         \
-          return #name_;                                                          \
+          return #field_name;                                                          \
         }                                                                         \
       };                                                                          \
       return name_getter_t{};                                                     \
@@ -65,8 +65,8 @@
       nt::ax_name_container_base<decltype(struct_maker_template_lambda)>>{};      \
 }()
 
-#define ax_new_axis(name_, value) static constexpr inline auto name_ = (ax_maker(name_) = value)
+#define ax_field_c(field_name, value) static constexpr inline auto field_name = (nt_field(field_name) = value)
 
-#define ax_new_axis_t(name_, value)                                  \
-  auto __internal__##name_ = [] { return ax_maker(name_) = value; }; \
-  using name_ = decltype(__internal__##name_())
+#define ax_field_t(field_name, value)                                  \
+  auto __internal__##field_name = [] { return nt_field(field_name) = value; }; \
+  using field_name = decltype(__internal__##field_name())
