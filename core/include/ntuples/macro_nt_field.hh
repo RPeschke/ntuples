@@ -3,6 +3,7 @@
 #include "ntuples/ntuples.hh"
 
 
+
 #define nt_field(field_name) []() constexpr {                                          \
   auto struct_maker_template_lambda = [](auto e) constexpr {                      \
     using ARG_T = decltype(e);                                                    \
@@ -42,9 +43,9 @@
     {                                                                             \
       struct getter_t                                                             \
       {                                                                           \
-        static constexpr auto &get(decltype(e.val) x)                             \
+        static constexpr decltype(auto) get(decltype(e.val) x)                             \
         {                                                                         \
-          return x.field_name;                                                         \
+            return (x.field_name); \
         }                                                                         \
       };                                                                          \
       return getter_t{};                                                          \
@@ -53,12 +54,21 @@
     {                                                                             \
       struct name_getter_t                                                        \
       {                                                                           \
-        static constexpr auto get_name()                                          \
+        static constexpr const char* get_name()                                          \
         {                                                                         \
           return #field_name;                                                          \
         }                                                                         \
       };                                                                          \
       return name_getter_t{};                                                     \
+    }                                                                             \
+     else if constexpr (e.N_value == nt::ax_name_container_base_const::c_has_field) \
+     {                                                                               \
+       struct has_field_t    {                                                       \
+              static constexpr void static_assert_fail(){  \
+                  static_assert(dependent_false<decltype(e)>::value, "[NTUPLE ERROR] Field `" #field_name "` does not exist in this ntuple");                                                                     \
+              }                         \
+        };                                                                          \
+      return has_field_t{};                                                       \
     }                                                                             \
   };                                                                              \
   return nt::ax_name_container<                                                   \

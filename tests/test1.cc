@@ -26,313 +26,166 @@
 
 #include "ntuples/std_adapter.hh"
 
-
+#include "ntuples/bind_args.hh"
 
 
 using namespace nt::algorithms;
 
   ax_field_c(subdetector, int());
+  ax_field_c(subdetector1, int());
   nt_new_field_c(test1 , int());
-  
-
-  
-
-//  nt_new_field_t(sector , int() );
-  //namespace __nt{       __nt_new_field_core( sector); static const  auto s = nt::ax_name_container<ztsector>{} = int();       } 
-  //using sector = decltype( __nt::s );
-  nt_new_field_t(sector , int{});
-  nt_new_field_c(sector1, std::string());
-
-  using ex1 = decltype( sector1 );
-
-  nt_new_field_name(axis);
-  nt_new_field_name_t(plane);
-
+    nt_new_field_t(sector , int{});
+    nt_new_field_t(sector1 , int{});
 
 template <typename T>
-struct get_fun{
-  
-  mutable T m_t;
-  constexpr get_fun(T&& t) : m_t(std::move(t)){}
+struct is_ax_name_container {
+private:
+  template <typename U>
+  static std::true_type test(const nt::ax_name_container<U>*);
 
-  template <typename ARGS>
-  decltype(auto) operator()(ARGS&& args) const {
+  static std::false_type test(...);
 
-    return m_t(std::forward<ARGS>(args) );
+public:
+  static constexpr bool value = decltype(test(std::declval<std::remove_cvref_t<T>*>()))::value;
+};
+
+template <typename T>
+constexpr bool is_ax_name_container_v = is_ax_name_container<T>::value;
+
+template <typename T, typename K>
+constexpr bool is_assignable_via_brackets_v = requires(T t, K k) {
+    { t[k] = k };
+};
+
+template <typename T, typename K>
+constexpr void enforce_assignable() {
+  static_assert(is_bracket_assignable<T, K>(),
+    "\n\n[NTUPLE ERROR] Cannot assign using t[t1] = t1.\n"
+    "Possible reasons:\n"
+    "- The key type t1 is not valid for the ntuple\n"
+    "- operator[] is not defined for the given key\n"
+    "- The assignment type is invalid\n"
+    "\nConsider checking your ntuple contents and ax_name_container bindings.\n"
+  );
+}
+
+template <size_t N, typename NT_T, typename T1, typename... ARGS>
+auto update1(NT_T&& t, T1&& t1, ARGS&&... args){
+  if constexpr (is_ax_name_container_v<T1>){
+    if constexpr ( t1.index_of<NT_T>() < N){
+      static_assert(dependent_false<NT_T>::value,  "[NTUPLE ERROR] Named argument appears after positional arguments. "
+                           "All named arguments must follow positional ones.");
+    }else {
+      t[t1] = t1;
+    
+
+    }
+      
+
+  }
+
+  if constexpr (sizeof...(args) == 0){
+    return t;
+  } else {
+    return update1<N>(t, std::forward<ARGS>(args)...);
+  }
+}
+
+template <size_t N, typename NT_T, typename T1, typename... ARGS>
+auto update0(NT_T&& t, T1&& t1, ARGS&&... args){
+ if constexpr (is_ax_name_container_v<T1>){
+  return update1<N>(t, std::forward<T1>(t1),  std::forward<ARGS>(args)...);
+ }else{
+  nt::get_nth<N>(t) = t1;
+  return update0<N+1>(t,  std::forward<ARGS>(args)...);
+ }
+}
+
+
+    auto l = [](auto& e) -> decltype(auto) {
+        
+      if constexpr (requires { e.subdetector; }) {
+            return (e.subdetector); // keep parens to preserve ref category
+        } else {
+            static_assert(dependent_false<decltype(e)>::value,
+                "\n[NTUPLE ERROR] Cannot access field `subdetector1` — it doesn't exist in this ntuple.\n"
+        );
+        }
+    };
+
+
+    template <typename... NamedArgs>
+auto update00(NamedArgs&&... named_args) {
+  // Return a lambda that captures named_args
+  return [&](auto&&... args) {
+    auto tup = nt::ntuple(std::forward<NamedArgs>(named_args)...);
+    if constexpr(sizeof...(args) == 0){
+      return tup;
+    }else {
+      return update0<0>(std::move(tup), std::forward<decltype(args)>(args)...);
+    }
+  };
+}
+
+    template<typename T>
+struct has_field_t {
+  static constexpr bool has_field1() {
+    if constexpr (requires { typename T::subdetector; }) {
+      return true;
+    } else {
+      return false;
+    }
   }
 };
 
+template <typename... ARGS>
+std::false_type has_field(ARGS&&...) {
+  return std::false_type{};
+}
 
-template <int N, typename... ARGS>
-constexpr auto get_nth_type( const nt::ntuple<ARGS...>& )
-    {
+template <typename T1 , typename T2>
+auto  has_field(T1&& t1, T2&& t2) ->  decltype(t1[t2] ,   std::true_type{}) {
+  return std::true_type{};
+}
 
-      return nt::_Remove_cvref_t<nt::NthTypeOf<N, nt::_Remove_cvref_t<ARGS>...>>();
-    }
+    template <typename... ARGS>
+    void my_function(ARGS&&... args){
+    //auto t0 = nt::ntuple( std::forward<ARGS>(args)...);
+      auto t0 = bind_args(
+   
+          subdetector = 0,
+          sector(15)
+        )(
+        args...
+      );
+     //constexpr  auto t11 =  has_field_t<decltype(t0)>::has_field1();
+     std::cout<< t0<< std::endl;
+      //constexpr  auto t1 = decltype(subdetector)::has_field(t0);
+
+     // auto x= decltype(t0[subdetector1] ,   std::true_type{}){};
+       constexpr  auto t1 = t0.contains_struct_maker_type< decltype(subdetector1)::struct_maker>() ;
+
+      constexpr  auto t2 =  decltype(subdetector)::has_field<decltype(t0)>();
+      constexpr  auto t3 =  decltype(subdetector1)::has_field<decltype(t0)>();
+
+      sector::get(t0) = 213;
+           std::cout<< t0<< std::endl;
+      l(t0);
 
 
-    template <typename T0, typename T1, typename T2, typename Comparision_T, typename projecttion_t >
-    void vec_join_r(T0& ret, const T1& t1, const T2& t2, Comparision_T comp, projecttion_t project)
-    {
-      ret.clear();
-      for (const auto& e1 : t1) {
-        for (const auto& e2 : t2) {
-          if (comp(e1, e2)) {
-            ret.push_back(project(e1, e2));
-          }
-        }
-      }
 
-    }
-
-    template <typename T1, typename T2, typename Comparision_T, typename projecttion_t >
-    auto vec_join(const T1& t1, const T2& t2, Comparision_T comp, projecttion_t project)
-    {
-      std::vector<  decltype(project(t1[0], t2[0]))  > ret;
-      vec_join_r(ret, t1, t2, comp, project);
-      return ret;
     }
 
 
 int main(int argv, char** argc) {
 
+ auto t = nt::ntuple();
+ std::cout << t << std::endl;
 
-  
 
 
+  my_function(4654, sector(150)  );
 
-    auto result = 
-          std::ranges::iota_view{0}
-        | std::ranges::views::filter([](int n) { 
-            return n % 2 == 0;
-          })  // Filter even numbers
-        | std::ranges::views::transform([](int n) { 
-            return nt::ntuple{
-                nt_field(member1) = n
-              };
-
-          })   
-        | std::ranges::views::transform([](auto&& nt1 ) {
-            return nt1 | nt::ntuple{              
-                nt_field(n2) =  nt1.member1 * nt1.member1,
-                nt_field(n3) =  nt1.member1 * nt1.member1 * nt1.member1,
-                test1 = 1312
-              };
-        })
-        | std::ranges::views::take(10);
-        
-    // Print the results
-    for (auto&& n : result  ) {
-        
-        std::cout << nt::get_nth<1>(n) << std::endl;
-        std::cout << n << std::endl;
-
-        std::cout << nt::get_nth<1>(n).v << std::endl;
-    }
-    std::cout << std::endl;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-  auto df11312 = fill_vector(10, [](int i){
-
-    return nt::ntuple{
-      subdetector = i/3 ,
-      sector{i/2},
-      nt_field(ex1) = 546
-    };
-
-  });
-
-  for (auto& e : df11312){
-    std::cout << e << std::endl;
-  }
-  
-
-  auto df2132321 = group(subdetector, sector{}).apply_append( df11312 , [] (const auto& x) {
-
-    return nt::ntuple{
-      
-      plane() = 1231
-    };
-
-  });
-
-  for (auto& e : df2132321){
-    std::cout << e << std::endl;
-  }
-  
-  auto n1 = nt::ntuple{
-      sector{123},
-      sector1 = std::string("asd")
-    };
-  auto n22 = nt::ntuple{
-      sector{124},
-      sector1 = std::string("asd")
-    };
-
-  std::cout << n1 <<std::endl;
-  nt::comparators::on_common_args(n1, n1);
-  auto x12312 = nt::get_nth<0>(n1) =3;
-  std::cout << n1 <<std::endl;
-
-  auto n2 = nt::ntuple{
-
-      axis = "4655",
-      plane() = 1231,
-      nt_field(ex1) = 546
-  };
-
-  auto nt321424 = n1 | n2 ;
-  std::cout << nt321424 << std::endl;
-  auto klm_nameing  = nt::fill_dataframe(2 , [](int i) {
-
-    return nt::ntuple{
-      subdetector = i ,
-      sector{123},
-      sector1 = std::string("asd"),
-      axis = "4655",
-      plane() = 1231,
-      nt_field(ex1) = 546
-    };
-    }
-    );
-
- auto nt1 = nt::ntuple{
-      subdetector = 1  ,
-      sector{123},
-      sector1 = std::string("asd"),
-      axis = "4655",
-      plane() = 1231,
-      nt_field(ex1) = 546
-    };
-  //std::cout << nt::get<0>(nt1) << std::endl;
-
-  /*
-  auto [xx1 , xx2] = [&](){
-    return nt::ntuple{
-      subdetector = 1  ,
-      sector{123}
-    };
-  }();
-  std::cout<<xx1<< ",   " << xx2 <<'\n';
-*/
-auto temp = nt::ntuple{ subdetector = 1, sector{123} };
-auto [xx1, xx2] = temp;
-std::cout<<xx1<< ",   " << xx2 <<'\n';
-
-  std::cout << (test1 = 123211) << std::endl;
-  std::cout << axis(klm_nameing[0]) << std::endl;
-
-
-  klm_nameing.emplace_back(
-      subdetector = 456 ,
-      sector{123},
-      sector1 = std::string("asd"),
-      axis = "4655",
-      plane() = 1231,
-      nt_field(ex1) = 546
-  );
-  auto x = nt_field(ex1) = 456;
-  const auto x1 = klm_nameing[0];
-
-  std::cout << x1 << std::endl;
-  constexpr auto g = get_fun([](auto&& e) -> decltype(auto) {
-    return e.ex1;
-  });
-  
-  g(klm_nameing[0]) =123;
-  std::cout << x1 << std::endl;
-  //klm_nameing[0].subdetector 
-
-
-
-  auto x123123 = nt_field(ex6) = std::string("asd");
-  //x123123 = "asdaswqe";
-
-  auto x123 = nt_field(ex6) = 21321;
-
-
-  auto df   = nt::dataframe<decltype(x123)>();
-  df.ex6.push_back(123);
-
-  auto x12 = x123.get(df);
-
-
-  auto nt3 = nt::ntuple(x123,
-    nt_field(ex7) = 64
-  );
-  std::cout << nt3 << std::endl;
-  std::cout << nt3[df.ex6] << std::endl;
-  auto nt4 = nt::ntuple<decltype(nt3.ex7)&>(
-    nt3.ex7
-  );
-  decltype(nt3.ex6)& ref = nt3.ex6;
-
-  nt4.ex7 = 87;
-  std::cout << nt4 << std::endl;
-  std::cout << nt3[nt3.ex6] << std::endl;
-  nt3[nt3.ex6] = 464;
-  std::cout << nt3[nt3.ex6] << std::endl;
-  [](const auto& e) {
-    std::cout << e << std::endl;
-  }(nt3);
-
-
-  auto df1 = nt::fill_dataframe(100, [](int i) {
-    return nt::ntuple(
-      nt_field(ex1) = i,
-      nt_field(ex2) = i * i,
-      nt_field(ex3) = i * i * i
-    );
-    });
-
-
-
-
-  std::cout << "\n\n" << std::endl;
-  std::cout << df1 << std::endl;
-  std::cout << "\n\n" << std::endl;
-  std::cout << df1[5] << std::endl;
-  df1[5].ex1 = 123213;
-  df1.ex2[5] = 321;
-  std::cout << df1[df1.ex2][5] << std::endl;
-  
-
-  std::cout << df1[4] << std::endl;
-  df1.ex2[4] = 5464;
-  std::cout << df1[4] << std::endl;
-  df1[2].ex1 = 12321;
-  std::cout << df1[2] << std::endl;
 
   return 0;
 }

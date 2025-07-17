@@ -10,6 +10,8 @@
 
 #include "ntuples/constexpr_for.hh"
 
+template <typename T>
+struct dependent_false : std::false_type {};
 
 namespace nt
 {
@@ -20,8 +22,6 @@ namespace nt
   template <int N, typename... Ts>
   using NthTypeOf =
       typename std::tuple_element<N, std::tuple<Ts...>>::type;
-
-
 
   template <typename T1>
   struct type_container
@@ -37,25 +37,26 @@ namespace nt
     constexpr ax_type(T1 t1) : v(std::move(t1)) {}
     constexpr ax_type operator=(T1 &&t1) const { return ax_type(std::move(t1)); }
     constexpr ax_type operator=(const T1 &t1) const { return ax_type(t1); }
-    
+
     template <typename T_IN>
-    constexpr ax_type operator()(T_IN &&t1) const { return ax_type(std::move( static_cast<T1>(t1) )); }
-    
+    constexpr ax_type operator()(T_IN &&t1) const { return ax_type(std::move(static_cast<T1>(t1))); }
+
     template <typename T_IN>
-    constexpr ax_type operator()(const T_IN& t1) const { return ax_type(static_cast<T1>(t1)); }
+    constexpr ax_type operator()(const T_IN &t1) const { return ax_type(static_cast<T1>(t1)); }
     constexpr ax_type operator=(T1 &&t1)
     {
       v = std::move(t1);
       return *this;
     }
-    constexpr ax_type& operator=(const T1 &t1)
+    constexpr ax_type &operator=(const T1 &t1)
     {
       v = t1;
       return *this;
     }
 
     template <typename T>
-    constexpr ax_type& operator=(const ax_type<T1, T>& t1) {
+    constexpr ax_type &operator=(const ax_type<T1, T> &t1)
+    {
       v = t1.v;
       return *this;
     }
@@ -74,108 +75,99 @@ namespace nt
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator<(const ax_type& lhs,  const ax_type<T1, T_RHS>& rhs)
+    friend constexpr bool operator<(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
     {
       return lhs.v < rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator<=(const ax_type& lhs,  const ax_type<T1, T_RHS>& rhs)
+    friend constexpr bool operator<=(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
     {
       return lhs.v <= rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator==(const ax_type& lhs,  const ax_type<T1, T_RHS>& rhs)
+    friend constexpr bool operator==(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
     {
       return lhs.v == rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator!=(const ax_type& lhs, const ax_type<T1, T_RHS>& rhs)
+    friend constexpr bool operator!=(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
     {
       return lhs.v != rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator>=(const ax_type& lhs, const ax_type<T1, T_RHS>& rhs)
+    friend constexpr bool operator>=(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
     {
       return lhs.v >= rhs.v;
     }
 
-    template < typename T_RHS>
-    friend constexpr bool operator>(const ax_type& lhs, const ax_type<T1, T_RHS>& rhs)
+    template <typename T_RHS>
+    friend constexpr bool operator>(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
     {
       return lhs.v > rhs.v;
     }
 
-
-
-
-    friend constexpr bool operator<(const ax_type& lhs, const T1& rhs)
+    friend constexpr bool operator<(const ax_type &lhs, const T1 &rhs)
     {
       return lhs.v < rhs;
     }
-    friend constexpr bool operator<(const T1 lhs, const ax_type&  rhs)
+    friend constexpr bool operator<(const T1 lhs, const ax_type &rhs)
     {
       return lhs < rhs.v;
     }
 
-
-    friend constexpr bool operator<=(const ax_type& lhs, const T1& rhs)
+    friend constexpr bool operator<=(const ax_type &lhs, const T1 &rhs)
     {
       return lhs.v <= rhs;
     }
 
-    friend constexpr bool operator<=(const T1& lhs, const  ax_type&   rhs)
+    friend constexpr bool operator<=(const T1 &lhs, const ax_type &rhs)
     {
       return lhs <= rhs.v;
     }
 
-
-    friend constexpr bool operator==(const ax_type& lhs, const T1& rhs)
+    friend constexpr bool operator==(const ax_type &lhs, const T1 &rhs)
     {
       return lhs.v == rhs;
     }
 
-    friend constexpr bool operator==(const T1& lhs, const  ax_type& rhs)
+    friend constexpr bool operator==(const T1 &lhs, const ax_type &rhs)
     {
       return lhs == rhs.v;
     }
 
-    
-    friend constexpr bool operator!=(const ax_type& lhs, const T1& rhs)
+    friend constexpr bool operator!=(const ax_type &lhs, const T1 &rhs)
     {
       return lhs.v != rhs;
     }
 
-    friend constexpr bool operator!=(const T1& lhs, const  ax_type& rhs)
+    friend constexpr bool operator!=(const T1 &lhs, const ax_type &rhs)
     {
       return lhs != rhs.v;
     }
 
-    
-    friend constexpr bool operator>=(const ax_type& lhs, const T1& rhs)
+    friend constexpr bool operator>=(const ax_type &lhs, const T1 &rhs)
     {
       return lhs.v >= rhs;
     }
 
-    friend constexpr bool operator>=(const T1& lhs, const  ax_type& rhs)
+    friend constexpr bool operator>=(const T1 &lhs, const ax_type &rhs)
     {
       return lhs >= rhs.v;
     }
 
-    
-    friend constexpr bool operator>(const ax_type& lhs, const T1& rhs)
+    friend constexpr bool operator>(const ax_type &lhs, const T1 &rhs)
     {
       return lhs.v > rhs;
     }
 
-    friend constexpr bool operator>(const T1& lhs, const  ax_type& rhs)
+    friend constexpr bool operator>(const T1 &lhs, const ax_type &rhs)
     {
       return lhs > rhs.v;
     }
-
 
     friend std::ostream &operator<<(std::ostream &out, const ax_type &self)
     {
@@ -290,6 +282,7 @@ namespace nt
     static constexpr int c_struct_maker = 0;
     static constexpr int c_getter1 = 1;
     static constexpr int c_get_name = 2;
+    static constexpr int c_has_field = 3;
   };
 
   template <typename T2>
@@ -320,6 +313,7 @@ namespace nt
     static constexpr decltype(auto) get(T &t)
     {
       using getter1 = decltype(std::declval<type>()(std::declval<type_wrap<T &, c_getter1>>()));
+
       return getter1::get(t);
     }
 
@@ -329,6 +323,14 @@ namespace nt
       using getter1 = decltype(std::declval<type>()(std::declval<type_wrap<const T &, c_getter1>>()));
       return getter1::get(t);
     }
+
+
+    static constexpr decltype(auto) static_assert_fail()
+    {
+      using has_field_t1 = decltype(std::declval<type>()(std::declval<type_wrap<int, c_has_field>>()));
+       has_field_t1::static_assert_fail();
+    }
+
     template <typename T>
     static constexpr decltype(auto) get_value(const T &t)
     {
@@ -341,13 +343,14 @@ namespace nt
       return ax_name_container_base::get(t).v;
     }
 
-    static constexpr auto get_name()
+    static constexpr decltype(auto) get_name()
     {
       using name_getter = decltype(std::declval<type>()(std::declval<type_wrap<int, c_get_name>>()));
       return name_getter::get_name();
     }
   };
 
+  #define FIELD_NAME(T) #T
   template <typename TBase>
   struct ax_name_container : TBase
   {
@@ -358,6 +361,21 @@ namespace nt
     {
       return TBase::get(t);
     }
+
+    
+    template <typename T>
+    constexpr static decltype(auto) get(T &&t) 
+    {
+      if constexpr( has_field<T>() ){
+        return TBase::get( std::forward<T>(t) );
+      }else {
+        TBase::static_assert_fail();
+        //static_assert(dependent_false<T>::value, "[NTUPLE ERROR] from 'constexpr static decltype(auto) get(T &&t) ' Field `field_name` does not exist in this ntuple");
+        //static_assert(dependent_false<T>::value, "[NTUPLE ERROR]  Field `field_name` does not exist in this ntuple\n"  __FUNCSIG__);
+      }
+    }
+
+
 
     template <typename T>
     static constexpr decltype(auto) get_value(T &t)
@@ -377,6 +395,20 @@ namespace nt
 
       return ax_type<_Remove_cvref_t<T>, ax_name_container>{std::move(t)};
     }
+
+    template <typename T>
+    constexpr static  auto has_field()  {
+       using BareT = std::remove_cvref_t<T>;
+        return BareT:: template contains_struct_maker_type< ax_name_container<TBase> >() ;
+
+    }
+    template <typename T>
+    constexpr static  auto index_of()  {
+       using BareT = std::remove_cvref_t<T>;
+        return BareT:: template index_of_struct_maker_type< ax_name_container<TBase> >() ;
+
+    }
+
   };
 
   template <typename... Ts>
@@ -396,22 +428,19 @@ namespace nt
   template <typename T, typename data_T>
   using base_maker_t = typename base_maker<T, data_T>::type;
 
-
-
   template <typename T>
   using ntuple_base_t = base_maker_t<_Remove_cvref_t<T>, T>;
 
   template <typename... T>
   struct ntuple : ntuple_base_t<T>...
   {
-    constexpr ntuple(const ntuple& rhs) = default;
-    constexpr ntuple& operator=(const ntuple& rhs) = default;
-    constexpr ntuple(const T& ...t1) : ntuple_base_t<T>(t1)... {}
+    constexpr ntuple(const ntuple &rhs) = default;
+    constexpr ntuple &operator=(const ntuple &rhs) = default;
+    constexpr ntuple(const T &...t1) : ntuple_base_t<T>(t1)... {}
 
+    constexpr ntuple() : ntuple_base_t<T>(_Remove_cvref_t<T>{})... {}
 
-    constexpr ntuple() :  ntuple_base_t<T>(_Remove_cvref_t<T>{})... {}
-
-    template <typename... Ts, typename = std::enable_if_t<(sizeof...(Ts) != 1)> > 
+    template <typename... Ts, typename = std::enable_if_t<(sizeof...(Ts) != 1)>>
     constexpr ntuple(Ts &&...t1) : ntuple_base_t<T>(std::forward<Ts>(t1))... {}
 
     template <typename T2>
@@ -442,12 +471,61 @@ namespace nt
           ARGS::get(rhs)...);
     }
 
+    template <typename TARGET>
+   constexpr static  bool contains_struct_maker_type() 
+    {
+      return (([]()
+               {
+    using base_t = ntuple_base_t<T>;
+    using maker_t = typename decltype(std::declval<base_t>().value())::struct_maker;
+    return std::is_same_v<maker_t, TARGET>; }()) ||
+              ...);
+    }
+    template <typename TARGET>
+    constexpr static int index_of_struct_maker_type() {
+      int index = 0;
+      int result = -1;
+      // Fold expression over initializer list to evaluate in order and capture index
+      ((std::is_same_v<typename decltype(std::declval<ntuple_base_t<T>>().value())::struct_maker, TARGET>
+            ? (result = index, false)
+            : true, ++index), ...);
+      return result;
+    }
 
-    friend constexpr bool operator<(const ntuple& lhs, const ntuple& rhs) {
-      constexpr auto lt =  comparators::lessThan<T...>();
+    friend constexpr bool operator<(const ntuple &lhs, const ntuple &rhs)
+    {
+      constexpr auto lt = comparators::lessThan<T...>();
       return lt(lhs, rhs);
     }
     inline static constexpr std::size_t __size__ = sizeof...(T);
+  };
+
+  template <>
+  struct ntuple<>
+  {
+    constexpr ntuple() = default;
+    constexpr ntuple(const ntuple &) = default;
+    constexpr ntuple &operator=(const ntuple &) = default;
+
+    friend std::ostream &operator<<(std::ostream &out, const ntuple &self)
+    {
+      out << "nt::ntuple<>";
+
+      return out;
+    }
+
+    template <typename... ARGS>
+    auto operator|(const ntuple<ARGS...> &rhs) const
+    {
+      return rhs;
+    }
+
+    friend constexpr bool operator<(const ntuple &lhs, const ntuple &rhs)
+    {
+
+      return false;
+    }
+    inline static constexpr std::size_t __size__ = 0;
   };
 
   template <typename... Ts>
@@ -482,4 +560,3 @@ namespace nt
   constexpr bool contains_type_v = contains_type<T, Ntuple>::value;
 
 }
-
