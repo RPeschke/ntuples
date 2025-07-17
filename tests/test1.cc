@@ -61,8 +61,7 @@ void my_function(ARGS &&...args)
       sector(15),
       sector2 = std::optional<int>()
     )(
-      args...
-    );
+      args...);
 
   std::cout << t0 << std::endl;
 }
@@ -85,30 +84,32 @@ int main(int argv, char **argc)
   my_function(4654, sector2 = 234234, sector(150));
 
   for (auto &&e : std::views::iota(1, 10) 
-                  | std::views::transform([](auto i) {  return nt::ntuple( index = i, index_squared = i * i , nt_field(cubed) = i*i*i); })
-                  | std::views::filter([](auto&& t) { return t.cubed >= 216; })
-  )
+                  | std::views::transform([](auto i)
+                                                                  { return nt::ntuple(index = i, index_squared = i * i, nt_field(cubed) = i * i * i); }) 
+                  | std::views::filter([](auto &&t)
+                                         { return t.cubed >= 216; }))
   {
     std::cout << e << std::endl; // requires operator<< for nt::ntuple
   }
 
-  auto df = nt::algorithms::fill_vector(10, [](auto i){
-    return nt::ntuple(
-        index = i,
-        index_squared = i*i
-    );
-  });
+  auto df = nt::algorithms::fill_vector(10, [](auto i)
+                                        { return nt::ntuple(
+                                              index = i,
+                                              index_squared = i * i); });
 
   std::cout << df << std::endl;
 
-  
-
   auto sp = nt_span(df, index);
 
-  std::cout << std::count_if(sp.begin(), sp.end(), [](auto&& e) {return e >= 5;}) << std::endl;
+  std::cout << std::count_if(sp.begin(), sp.end(), [](auto &&e)
+                             { return e >= 5; })
+            << std::endl;
 
-for (auto&& e : sp | std::views::filter([](auto&& t) { return t >= 5; })) {
+  for (auto &&e : sp 
+                  | std::views::filter([](auto &&t)
+                                          { return t >= 5; }))
+  {
     std::cout << e << std::endl;
-}
+  }
   return 0;
 }
