@@ -11,7 +11,9 @@
 #include "ntuples/constexpr_for.hh"
 
 template <typename T>
-struct dependent_false : std::false_type {};
+struct dependent_false : std::false_type
+{
+};
 
 namespace nt
 {
@@ -171,7 +173,16 @@ namespace nt
 
     friend std::ostream &operator<<(std::ostream &out, const ax_type &self)
     {
-      out << self.get_name() << ": " << self.v;
+      out << self.get_name() << ": ";
+
+      if constexpr (requires(std::ostream &o, const decltype(self.v) &val) { o << val; })
+      {
+        out << self.v;
+      }
+      else
+      {
+        out << "<unsupported type>";
+      }
       return out;
     }
 
@@ -324,11 +335,10 @@ namespace nt
       return getter1::get(t);
     }
 
-
     static constexpr decltype(auto) static_assert_fail()
     {
       using has_field_t1 = decltype(std::declval<type>()(std::declval<type_wrap<int, c_has_field>>()));
-       has_field_t1::static_assert_fail();
+      has_field_t1::static_assert_fail();
     }
 
     template <typename T>
@@ -350,7 +360,7 @@ namespace nt
     }
   };
 
-  #define FIELD_NAME(T) #T
+#define FIELD_NAME(T) #T
   template <typename TBase>
   struct ax_name_container : TBase
   {
@@ -362,20 +372,20 @@ namespace nt
       return TBase::get(t);
     }
 
-    
     template <typename T>
-    constexpr static decltype(auto) get(T &&t) 
+    constexpr static decltype(auto) get(T &&t)
     {
-      if constexpr( has_field<T>() ){
-        return TBase::get( std::forward<T>(t) );
-      }else {
+      if constexpr (has_field<T>())
+      {
+        return TBase::get(std::forward<T>(t));
+      }
+      else
+      {
         TBase::static_assert_fail();
-        //static_assert(dependent_false<T>::value, "[NTUPLE ERROR] from 'constexpr static decltype(auto) get(T &&t) ' Field `field_name` does not exist in this ntuple");
-        //static_assert(dependent_false<T>::value, "[NTUPLE ERROR]  Field `field_name` does not exist in this ntuple\n"  __FUNCSIG__);
+        // static_assert(dependent_false<T>::value, "[NTUPLE ERROR] from 'constexpr static decltype(auto) get(T &&t) ' Field `field_name` does not exist in this ntuple");
+        // static_assert(dependent_false<T>::value, "[NTUPLE ERROR]  Field `field_name` does not exist in this ntuple\n"  __FUNCSIG__);
       }
     }
-
-
 
     template <typename T>
     static constexpr decltype(auto) get_value(T &t)
@@ -397,18 +407,17 @@ namespace nt
     }
 
     template <typename T>
-    constexpr static  auto has_field()  {
-       using BareT = std::remove_cvref_t<T>;
-        return BareT:: template contains_struct_maker_type< ax_name_container<TBase> >() ;
-
+    constexpr static auto has_field()
+    {
+      using BareT = std::remove_cvref_t<T>;
+      return BareT::template contains_struct_maker_type<ax_name_container<TBase>>();
     }
     template <typename T>
-    constexpr static  auto index_of()  {
-       using BareT = std::remove_cvref_t<T>;
-        return BareT:: template index_of_struct_maker_type< ax_name_container<TBase> >() ;
-
+    constexpr static auto index_of()
+    {
+      using BareT = std::remove_cvref_t<T>;
+      return BareT::template index_of_struct_maker_type<ax_name_container<TBase>>();
     }
-
   };
 
   template <typename... Ts>
@@ -472,7 +481,7 @@ namespace nt
     }
 
     template <typename TARGET>
-   constexpr static  bool contains_struct_maker_type() 
+    constexpr static bool contains_struct_maker_type()
     {
       return (([]()
                {
@@ -482,13 +491,16 @@ namespace nt
               ...);
     }
     template <typename TARGET>
-    constexpr static int index_of_struct_maker_type() {
+    constexpr static int index_of_struct_maker_type()
+    {
       int index = 0;
       int result = -1;
       // Fold expression over initializer list to evaluate in order and capture index
       ((std::is_same_v<typename decltype(std::declval<ntuple_base_t<T>>().value())::struct_maker, TARGET>
             ? (result = index, false)
-            : true, ++index), ...);
+            : true,
+        ++index),
+       ...);
       return result;
     }
 

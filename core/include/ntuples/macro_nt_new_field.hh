@@ -28,7 +28,7 @@
     }                                                     \
     template <typename T>                                 \
     static constexpr decltype(auto) get(T&& t) {          \
-      return std::forward<T>(t).field_name;               \
+      return (std::forward<T>(t).field_name);               \
     }                                                     \
     template <typename T=int>                                                     \
     static constexpr decltype(auto) static_assert_fail() {\

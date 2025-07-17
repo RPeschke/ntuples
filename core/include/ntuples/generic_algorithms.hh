@@ -1,17 +1,16 @@
 #pragma once
 
-
 namespace nt::algorithms
 {
 
   template <typename VEC, typename FUNC_T>
-  auto add_column(const VEC& vec, FUNC_T&& func)
+  auto add_column(const VEC &vec, FUNC_T &&func)
   {
     std::vector<decltype(vec[0] | func(vec[0]))> ret;
     ret.reserve(vec.size());
-    for (const auto& e: vec)
+    for (const auto &e : vec)
     {
-      ret.push_back( e | func(e));
+      ret.push_back(e | func(e));
     }
     return ret;
   }
@@ -26,6 +25,38 @@ namespace nt::algorithms
       ret.push_back(func(i));
     }
     return ret;
+  }
+
+  template <typename... ARGS>
+  std::ostream &operator<<(std::ostream &out, const std::vector<nt::ntuple<ARGS...>> &self)
+  {
+    out << "|";
+
+    constexpr_for<0, sizeof...(ARGS), 1>([&](auto ntuple_index)
+                                         {
+                                          using T =   nt::_Remove_cvref_t<decltype(nt::get_nth<ntuple_index>(self[0]))>;
+                                           out << ' '<<T::get_name() << " |" ;
+                                         });
+        out << "\n";
+        out << "|";
+    constexpr_for<0, sizeof...(ARGS), 1>([&](auto ntuple_index)
+                                         {
+                                          using T =   nt::_Remove_cvref_t<decltype(nt::get_nth<ntuple_index>(self[0]))>;
+                                           out  << "----|" ;
+                                         });
+
+    for (auto&& e : self){
+        out << "\n";
+        out << "|";
+          constexpr_for<0, sizeof...(ARGS), 1>([&](auto ntuple_index)
+                                         {
+                                         
+                                           out << ' '<< nt::get_nth<ntuple_index>(e).v  << " |" ;
+                                         });
+    }
+    out << "\n";
+
+    return out;
   }
 
   template <typename T0, typename T1, typename T2, typename Comparision_T, typename projecttion_t>
@@ -53,40 +84,44 @@ namespace nt::algorithms
   }
 
   template <typename CONTAINER_T>
-  void sort(CONTAINER_T& container)
+  void sort(CONTAINER_T &container)
   {
     std::sort(container.begin(), container.end());
   }
 
   template <typename CONTAINER_T, typename COMP_T>
-  void sort(CONTAINER_T& container, COMP_T&& comp)
+  void sort(CONTAINER_T &container, COMP_T &&comp)
   {
     std::sort(container.begin(), container.end(), comp);
   }
 
   template <typename CONTAINER_T, typename OP_T>
-  auto count_if(const  CONTAINER_T& container, OP_T op)
+  auto count_if(const CONTAINER_T &container, OP_T op)
   {
     int i = 0;
-    for (const auto& e : container)
+    for (const auto &e : container)
       if (op(e))
         ++i;
     return i;
   }
 
   template <typename VEC_T, typename FILTER_T>
-  void filter(VEC_T& vec, FILTER_T&& f) {
-    auto removeIt = std::remove_if(vec.begin(), vec.end(), [&](auto&& e) {return !f(e); });
+  void filter(VEC_T &vec, FILTER_T &&f)
+  {
+    auto removeIt = std::remove_if(vec.begin(), vec.end(), [&](auto &&e)
+                                   { return !f(e); });
     vec.erase(removeIt, vec.end());
-
   }
 
   template <typename VEC_T, typename FILTER_T>
-  auto filter_copy(const VEC_T& vec, FILTER_T&& f) {
+  auto filter_copy(const VEC_T &vec, FILTER_T &&f)
+  {
     VEC_T ret;
     ret.reserve(vec.size());
-    for (const auto& e:vec) {
-      if (f(e)) {
+    for (const auto &e : vec)
+    {
+      if (f(e))
+      {
         ret.push_back(e);
       }
     }

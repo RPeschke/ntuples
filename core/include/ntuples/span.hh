@@ -6,7 +6,7 @@
 namespace nt
 {
     template <typename T>
-    class span
+    class span : public std::ranges::view_interface<span<T>>
     {
     public:
         using element_type = T;
@@ -25,6 +25,7 @@ namespace nt
             using pointer = T *;
             using reference = T &;
 
+            iterator() : m_ptr(nullptr), m_stride(0) {}
             iterator(std::byte *ptr, size_type stride)
                 : m_ptr(ptr), m_stride(stride) {}
 
