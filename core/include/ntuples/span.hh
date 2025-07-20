@@ -63,6 +63,7 @@ namespace nt
         span(std::byte *ptr, size_type count, size_type stride = sizeof(T))
             : m_ptr(ptr), m_count(count), m_stride(stride) {}
 
+        span() =default;
         reference operator[](size_type idx) const
         {
             return *reinterpret_cast<pointer>(m_ptr + idx * m_stride);
@@ -94,9 +95,9 @@ namespace nt
         }
 
     private:
-        std::byte *m_ptr;
-        size_type m_count;
-        size_type m_stride;
+        std::byte *m_ptr = nullptr;
+        size_type m_count = 0;
+        size_type m_stride = 0;
     };
 
 }

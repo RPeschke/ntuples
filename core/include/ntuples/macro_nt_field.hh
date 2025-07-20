@@ -75,8 +75,8 @@
       nt::ax_name_container_base<decltype(struct_maker_template_lambda)>>{};      \
 }()
 
-#define ax_field_c(field_name, value) static constexpr inline auto field_name = (nt_field(field_name) = value)
+#define nt_field_c(field_name, value) static constexpr inline auto field_name = (nt_field(field_name) = value)
 
-#define ax_field_t(field_name, value)                                  \
+#define nt_field_t(field_name, value)                                  \
   auto __internal__##field_name = [] { return nt_field(field_name) = value; }; \
   using field_name = decltype(__internal__##field_name())
