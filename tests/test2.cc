@@ -31,8 +31,8 @@
 
 using namespace nt::algorithms;
 
-  ax_field_c(subdetector, int());
-  ax_field_c(subdetector1, int());
+  nt_field_c(subdetector, int());
+  nt_field_c(subdetector1, int());
   nt_new_field_c(test1 , int());
   
 

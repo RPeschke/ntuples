@@ -1,3 +1,4 @@
+#pragma once
 #include "ntuples.hh"
 #include <tuple>
 #include <utility>

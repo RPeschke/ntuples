@@ -60,10 +60,13 @@ namespace nt
             size_type m_stride;
         };
 
-        span(std::byte *ptr, size_type count, size_type stride = sizeof(T))
-            : m_ptr(ptr), m_count(count), m_stride(stride) {}
+        span(T *ptr, size_type count, size_type stride = sizeof(T))
+            : m_ptr((std::byte *) ptr), m_count(count), m_stride(stride) {}
 
         span() =default;
+
+        operator nt::span<const T>(){ return nt::span<const T>((const T*)m_ptr, m_count, m_stride); }
+
         reference operator[](size_type idx) const
         {
             return *reinterpret_cast<pointer>(m_ptr + idx * m_stride);
@@ -101,7 +104,3 @@ namespace nt
     };
 
 }
-
-#define nt_span(container, member) nt::span<decltype(container[0].member.v)>(                    \
-    container.size() ? (std::byte *)&decltype(container[0].member)::get(container[0]) : nullptr, \
-    container.size(), sizeof(decltype(container[0])))

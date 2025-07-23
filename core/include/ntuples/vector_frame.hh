@@ -30,7 +30,7 @@ namespace nt
             auto &m_vec = reinterpret_cast<VECT_T &>(*(this - field_index));
 
             return nt::span<decltype(FIELD_T::get(m_vec.m_data[0]).v)>(
-                m_vec.m_data.size() ? (std::byte *)&(FIELD_T::get(m_vec.m_data[0])) : nullptr,
+                m_vec.m_data.size() ? &(FIELD_T::get(m_vec.m_data[0]).v) : nullptr,
                 m_vec.m_data.size(), sizeof(decltype(m_vec.m_data[0])));
         }
 
