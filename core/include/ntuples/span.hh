@@ -15,19 +15,17 @@ namespace nt
         using difference_type = std::ptrdiff_t;
         using pointer = T *;
         using reference = T &;
-
         class iterator
         {
         public:
-            using iterator_category = std::forward_iterator_tag;
+            using iterator_category = std::random_access_iterator_tag;
             using value_type = T;
             using difference_type = std::ptrdiff_t;
             using pointer = T *;
             using reference = T &;
 
             iterator() : m_ptr(nullptr), m_stride(0) {}
-            iterator(std::byte *ptr, size_type stride)
-                : m_ptr(ptr), m_stride(stride) {}
+            iterator(std::byte *ptr, size_type stride) : m_ptr(ptr), m_stride(stride) {}
 
             reference operator*() const { return *reinterpret_cast<pointer>(m_ptr); }
             pointer operator->() const { return reinterpret_cast<pointer>(m_ptr); }
@@ -37,23 +35,48 @@ namespace nt
                 m_ptr += m_stride;
                 return *this;
             }
-
             iterator operator++(int)
             {
-                iterator temp = *this;
-                m_ptr += m_stride;
-                return temp;
+                auto tmp = *this;
+                ++(*this);
+                return tmp;
             }
 
-            friend bool operator==(const iterator &a, const iterator &b)
+            iterator &operator--()
             {
-                return a.m_ptr == b.m_ptr;
+                m_ptr -= m_stride;
+                return *this;
+            }
+            iterator operator--(int)
+            {
+                auto tmp = *this;
+                --(*this);
+                return tmp;
             }
 
-            friend bool operator!=(const iterator &a, const iterator &b)
+            iterator operator+(difference_type n) const { return iterator(m_ptr + n * m_stride, m_stride); }
+            iterator operator-(difference_type n) const { return iterator(m_ptr - n * m_stride, m_stride); }
+            difference_type operator-(const iterator &other) const { return (m_ptr - other.m_ptr) / m_stride; }
+
+            iterator &operator+=(difference_type n)
             {
-                return a.m_ptr != b.m_ptr;
+                m_ptr += n * m_stride;
+                return *this;
             }
+            iterator &operator-=(difference_type n)
+            {
+                m_ptr -= n * m_stride;
+                return *this;
+            }
+
+            reference operator[](difference_type n) const { return *reinterpret_cast<pointer>(m_ptr + n * m_stride); }
+
+            bool operator==(const iterator &other) const { return m_ptr == other.m_ptr; }
+            bool operator!=(const iterator &other) const { return m_ptr != other.m_ptr; }
+            bool operator<(const iterator &other) const { return m_ptr < other.m_ptr; }
+            bool operator<=(const iterator &other) const { return m_ptr <= other.m_ptr; }
+            bool operator>(const iterator &other) const { return m_ptr > other.m_ptr; }
+            bool operator>=(const iterator &other) const { return m_ptr >= other.m_ptr; }
 
         private:
             std::byte *m_ptr;
@@ -61,11 +84,11 @@ namespace nt
         };
 
         span(T *ptr, size_type count, size_type stride = sizeof(T))
-            : m_ptr((std::byte *) ptr), m_count(count), m_stride(stride) {}
+            : m_ptr((std::byte *)ptr), m_count(count), m_stride(stride) {}
 
-        span() =default;
+        span() = default;
 
-        operator nt::span<const T>(){ return nt::span<const T>((const T*)m_ptr, m_count, m_stride); }
+        operator nt::span<const T>() { return nt::span<const T>((const T *)m_ptr, m_count, m_stride); }
 
         reference operator[](size_type idx) const
         {

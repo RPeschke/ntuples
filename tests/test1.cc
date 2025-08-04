@@ -9,6 +9,8 @@
 #include "ntuples/comparators.hh"
 #include "ntuples/span.hh"
 #include "ntuples/nt_erased.hh"
+#include "ntuples/join.hh"
+#include "ntuples/constexpr_for.hh"
 
 #include "ntuples/vector_frame.hh"
 
@@ -20,6 +22,8 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
+#include <sstream>
 
 #include <iostream>
 #include <ranges>
@@ -31,6 +35,10 @@
 
 #include "ntuples/bind_args.hh"
 #include "ntuples/nt_vector_erased.hh"
+
+#include "ntuples/groupby1.hh"
+
+#include "ntuples/range.hh"
 
 using namespace nt::algorithms;
 
@@ -212,5 +220,87 @@ int main(int argv, char **argc)
   {
     std::cout << ve.column_name(i) << std::endl;
   }
+
+  for (auto &&e : df3 | std::views::transform([](auto &e)
+                                              { return e.index; }))
+    std::cout << e << "\n";
+
+  auto df4 = nt::fill_vector_frame(std::views::iota(1, 10) | std::views::transform([](auto i)
+                                                                                   { return nt::ntuple(
+                                                                                         nt_field(mod2) = i % 2,
+                                                                                         nt_field(mod3) = i % 3,
+                                                                                         nt_field(mod4) = i % 4); }
+
+                                                                                   ));
+
+  auto g011 = nt::GroupIndexBuffer(df4.mod2(), df4.mod3());
+  auto g00 = nt::fill_vector_frame(g011.size(),
+                                   [&](auto i)
+                                   {
+                                     int sum = 0;
+                                     for (auto &&e : g011[i])
+                                     {
+                                       sum += df4[e.index].mod4;
+                                       std::cout << e.group_ID << ": " << df4[e.index] << std::endl;
+                                     }
+                                     return nt::ntuple(
+                                         nt_field(group_ID) = g011[i][0].group_ID,
+                                         nt_field(sum_mod4) = sum);
+                                   });
+
+  auto vf = nt::vector_frame_filler([&](auto i)
+                                    {
+                                      int sum = 0;
+                                      for (auto &&e : g011[i])
+                                      {
+                                        sum += df4[e.index].mod4;
+                                       // std::cout << e.group_ID << ": " << df4[e.index] << std::endl;
+                                      }
+                                      return nt::ntuple(
+                                          nt_field(group_ID) =(int) g011[i][0].group_ID,
+                                          nt_field(sum_mod4) = (int) sum); });
+  nt::to_csv("test.csv", g00);
+  auto g11 = vf.get_buffer();
+  nt::from_csv("test.csv", g11);
+   
+  auto g22 = nt::from_csv("test.csv", vf.get_buffer());
+  std::cout << g00 << std::endl;
+  std::cout << g11 << std::endl;
+  std::cout << g22 << std::endl;
+  auto buff = vf.get_buffer();
+  vf(g011.size(), buff.m_data);
+
+  // for (auto&& e: g00){  std::cout << e << std::endl; }
+
+  std::vector<double> m_data = {1, 2, 3, 4};
+
+  for (auto &&e : m_data)
+  {
+    std::cout << e << std::endl;
+  }
+
+  auto r1 = nt::subrange(m_data, [](auto &e)
+                         { return e >= 3; });
+
+  auto gen = nt::generator(0, 10);
+
+  for (auto &&e : gen | std::views::transform([](double x)
+                                              { return x * 2; }))
+  {
+    std::cout << e << std::endl;
+  }
+
+  for (auto &&e : nt::transform(r1, [](double x)
+                                { return x * 2; }))
+  {
+    std::cout << e << std::endl;
+  }
+
+  nt::joinIndex(
+      nt::join_on(
+          buff.group_ID(), buff.sum_mod4()),
+      nt::join_on(
+          buff.group_ID(), buff.sum_mod4()));
+
   return 0;
 }

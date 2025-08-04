@@ -148,6 +148,9 @@ namespace nt
         template <typename VecT>
         vector_erased(VecT &vec) : self(std::make_shared<model<VecT>>(&vec)) {}
 
+    
+        vector_erased(std::shared_ptr<concept1> concept_) : self(std::move(concept_)) {}
+
         std::size_t size() const
         {
             return self->size();
