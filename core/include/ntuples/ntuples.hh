@@ -280,7 +280,7 @@ namespace nt
 
 
 
-  struct ax_name_container_base_const
+  struct field_name_container_base_const
   {
     static constexpr int c_struct_maker = 0;
     static constexpr int c_getter1 = 1;
@@ -289,11 +289,11 @@ namespace nt
   };
 
   template <typename T2>
-  struct ax_name_container_base : ax_name_container_base_const
+  struct field_name_container_base : field_name_container_base_const
   {
-    using type = T2;
+    using Lambda_T = T2;
 
-    constexpr ax_name_container_base() = default;
+    constexpr field_name_container_base() = default;
 
     template <typename T, int N>
     struct type_wrap
@@ -306,7 +306,7 @@ namespace nt
     template <typename T>
     static constexpr auto struct_maker()
     {
-      return decltype(std::declval<type>()(std::declval<type_wrap<T, c_struct_maker>>())){};
+      return decltype(std::declval<Lambda_T>()(std::declval<type_wrap<T, c_struct_maker>>())){};
     }
 
     template <typename Data_T>
@@ -315,7 +315,7 @@ namespace nt
     template <typename T>
     static constexpr decltype(auto) get(T &t)
     {
-      using getter1 = decltype(std::declval<type>()(std::declval<type_wrap<T &, c_getter1>>()));
+      using getter1 = decltype(std::declval<Lambda_T>()(std::declval<type_wrap<T &, c_getter1>>()));
 
       return getter1::get(t);
     }
@@ -323,46 +323,41 @@ namespace nt
     template <typename T>
     static constexpr decltype(auto) get(const T &t)
     {
-      using getter1 = decltype(std::declval<type>()(std::declval<type_wrap<const T &, c_getter1>>()));
+      using getter1 = decltype(std::declval<Lambda_T>()(std::declval<type_wrap<const T &, c_getter1>>()));
       return getter1::get(t);
     }
 
     static constexpr decltype(auto) static_assert_fail()
     {
-      using has_field_t1 = decltype(std::declval<type>()(std::declval<type_wrap<int, c_has_field>>()));
+      using has_field_t1 = decltype(std::declval<Lambda_T>()(std::declval<type_wrap<int, c_has_field>>()));
       has_field_t1::static_assert_fail();
     }
 
     template <typename T>
     static constexpr decltype(auto) get_value(const T &t)
     {
-      return ax_name_container_base::get(t).v;
+      return field_name_container_base::get(t).v;
     }
 
     template <typename T>
     static constexpr decltype(auto) get_value(T &t)
     {
-      return ax_name_container_base::get(t).v;
+      return field_name_container_base::get(t).v;
     }
 
     static constexpr decltype(auto) get_name()
     {
-      using name_getter = decltype(std::declval<type>()(std::declval<type_wrap<int, c_get_name>>()));
+      using name_getter = decltype(std::declval<Lambda_T>()(std::declval<type_wrap<int, c_get_name>>()));
       return name_getter::get_name();
     }
   };
 
 #define FIELD_NAME(T) #T
   template <typename TBase>
-  struct ax_name_container : TBase
+  struct field_name_container : TBase
   {
-    constexpr ax_name_container() = default;
+    constexpr field_name_container() = default;
 
-    /*template <typename T>
-    constexpr decltype(auto) operator()(T &&t) const
-    {
-      return TBase::get(t);
-    }*/
 
     template <typename T>
     constexpr static decltype(auto) get(T &&t)
@@ -374,8 +369,6 @@ namespace nt
       else
       {
         TBase::static_assert_fail();
-        // static_assert(dependent_false<T>::value, "[NTUPLE ERROR] from 'constexpr static decltype(auto) get(T &&t) ' Field `field_name` does not exist in this ntuple");
-        // static_assert(dependent_false<T>::value, "[NTUPLE ERROR]  Field `field_name` does not exist in this ntuple\n"  __FUNCSIG__);
       }
     }
 
@@ -395,30 +388,30 @@ namespace nt
     constexpr auto operator=(T t) const
     {
 
-      return ax_type<_Remove_cvref_t<T>, ax_name_container>{std::move(t)};
+      return ax_type<_Remove_cvref_t<T>, field_name_container>{std::move(t)};
     }
 
     template <typename T>
     constexpr static auto has_field()
     {
       using BareT = std::remove_cvref_t<T>;
-      return BareT::template contains_struct_maker_type<ax_name_container<TBase>>();
+      return BareT::template contains_struct_maker_type<field_name_container<TBase>>();
     }
     template <typename T>
     constexpr static auto index_of()
     {
       using BareT = std::remove_cvref_t<T>;
-      return BareT::template index_of_struct_maker_type<ax_name_container<TBase>>();
+      return BareT::template index_of_struct_maker_type<field_name_container<TBase>>();
     }
   };
 
   template <typename... Ts>
-  ax_name_container(Ts &&...ts) -> ax_name_container<_Remove_cvref_t<Ts>...>;
+  field_name_container(Ts &&...ts) -> field_name_container<_Remove_cvref_t<Ts>...>;
 
   template <typename T2>
-  auto constexpr get_ax_name_container(const ax_name_container<T2> &t)
+  auto constexpr get_ax_name_container(const field_name_container<T2> &t)
   {
-    return ax_name_container<T2>{};
+    return field_name_container<T2>{};
   }
 
   template <typename T, typename data_T>
@@ -445,9 +438,9 @@ namespace nt
     constexpr ntuple(Ts &&...t1) : ntuple_base_t<T>(std::forward<Ts>(t1))... {}
 
     template <typename T2>
-    decltype(auto) operator[](const ax_name_container<T2> &t)
+    decltype(auto) operator[](const field_name_container<T2> &t)
     {
-      return ax_name_container<T2>::get(*this);
+      return field_name_container<T2>::get(*this);
     }
 
     friend std::ostream &operator<<(std::ostream &out, const ntuple &self)

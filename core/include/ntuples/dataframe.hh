@@ -19,9 +19,9 @@ namespace nt{
   {
 
     template <typename T2>
-    decltype(auto) operator[](const nt::ax_name_container<T2> &t)
+    decltype(auto) operator[](const nt::field_name_container<T2> &t)
     {
-      return nt::ax_name_container<T2>::get(*this);
+      return nt::field_name_container<T2>::get(*this);
     }
 
     auto operator[](size_t i)

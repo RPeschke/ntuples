@@ -41,7 +41,7 @@
   {                                            \
     __nt_new_field_core(field_name);                 \
   }                                            \
-  qualifier field_name = (nt::ax_name_container<__nt::zt##field_name>{} = value)
+  qualifier field_name = (nt::field_name_container<__nt::zt##field_name>{} = value)
 
 #define nt_new_field(field_name, value) __nt_new_field(static constexpr inline auto, field_name, value)
 #define nt_new_field_c(field_name, value) __nt_new_field(static const inline auto, field_name, value)
@@ -51,21 +51,21 @@
   {                                 \
     __nt_new_field_core(field_name);      \
   }                                 \
-  using field_name = decltype(nt::ax_name_container<__nt::zt##field_name>{} = value)
+  using field_name = decltype(nt::field_name_container<__nt::zt##field_name>{} = value)
 
 #define nt_new_field_name(field_name)     \
   namespace __nt               \
   {                            \
     __nt_new_field_core(field_name); \
   }                            \
-  static constexpr inline auto field_name = nt::ax_name_container<__nt::zt##field_name> {}
+  static constexpr inline auto field_name = nt::field_name_container<__nt::zt##field_name> {}
 
 #define nt_new_field_name_t(field_name)   \
   namespace __nt               \
   {                            \
     __nt_new_field_core(field_name); \
   }                            \
-  using field_name = nt::ax_name_container<__nt::zt##field_name>
+  using field_name = nt::field_name_container<__nt::zt##field_name>
 
 
 

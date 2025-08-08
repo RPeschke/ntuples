@@ -39,7 +39,7 @@ using namespace nt::algorithms;
   
 
 //  nt_new_field_t(sector , int() );
-  //namespace __nt{       __nt_new_field_core( sector); static const  auto s = nt::ax_name_container<ztsector>{} = int();       } 
+  //namespace __nt{       __nt_new_field_core( sector); static const  auto s = nt::field_name_container<ztsector>{} = int();       } 
   //using sector = decltype( __nt::s );
   nt_new_field_t(sector , int{});
   nt_new_field_c(sector1, std::string());
@@ -133,7 +133,7 @@ template <typename T>
 struct is_ax_name_container {
 private:
   template <typename U>
-  static std::true_type test(const nt::ax_name_container<U>*);
+  static std::true_type test(const nt::field_name_container<U>*);
 
   static std::false_type test(...);
 
@@ -157,7 +157,7 @@ constexpr void enforce_assignable() {
     "- The key type t1 is not valid for the ntuple\n"
     "- operator[] is not defined for the given key\n"
     "- The assignment type is invalid\n"
-    "\nConsider checking your ntuple contents and ax_name_container bindings.\n"
+    "\nConsider checking your ntuple contents and field_name_container bindings.\n"
   );
 }
 

@@ -10,7 +10,7 @@ namespace nt
         {
         private:
             template <typename U>
-            static std::true_type test(const nt::ax_name_container<U> *);
+            static std::true_type test(const nt::field_name_container<U> *);
 
             static std::false_type test(...);
 

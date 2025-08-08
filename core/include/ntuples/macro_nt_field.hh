@@ -7,7 +7,7 @@
 #define nt_field(field_name) []() constexpr {                                          \
   auto struct_maker_template_lambda = [](auto e) constexpr {                      \
     using ARG_T = decltype(e);                                                    \
-    if constexpr (e.N_value == nt::ax_name_container_base_const::c_struct_maker)  \
+    if constexpr (e.N_value == nt::field_name_container_base_const::c_struct_maker)  \
     {                                                                             \
       if constexpr (!std::is_reference_v<typename ARG_T::type>)                   \
       {                                                                           \
@@ -39,7 +39,7 @@
         return nt::type_container<Zt##field_name>{};                                   \
       }                                                                           \
     }                                                                             \
-    else if constexpr (e.N_value == nt::ax_name_container_base_const::c_getter1)  \
+    else if constexpr (e.N_value == nt::field_name_container_base_const::c_getter1)  \
     {                                                                             \
       struct getter_t                                                             \
       {                                                                           \
@@ -50,7 +50,7 @@
       };                                                                          \
       return getter_t{};                                                          \
     }                                                                             \
-    else if constexpr (e.N_value == nt::ax_name_container_base_const::c_get_name) \
+    else if constexpr (e.N_value == nt::field_name_container_base_const::c_get_name) \
     {                                                                             \
       struct name_getter_t                                                        \
       {                                                                           \
@@ -61,7 +61,7 @@
       };                                                                          \
       return name_getter_t{};                                                     \
     }                                                                             \
-     else if constexpr (e.N_value == nt::ax_name_container_base_const::c_has_field) \
+     else if constexpr (e.N_value == nt::field_name_container_base_const::c_has_field) \
      {                                                                               \
        struct has_field_t    {                                                       \
               static constexpr void static_assert_fail(){  \
@@ -71,8 +71,8 @@
       return has_field_t{};                                                       \
     }                                                                             \
   };                                                                              \
-  return nt::ax_name_container<                                                   \
-      nt::ax_name_container_base<decltype(struct_maker_template_lambda)>>{};      \
+  return nt::field_name_container<                                                   \
+      nt::field_name_container_base<decltype(struct_maker_template_lambda)>>{};      \
 }()
 
 #define nt_field_c(field_name, value) static constexpr inline auto field_name = (nt_field(field_name) = value)
