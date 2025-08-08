@@ -278,15 +278,7 @@ namespace nt
     }
   }
 
-  template <typename T1, typename T2>
-  struct ax_type2 : T1, T2
-  {
 
-    constexpr ax_type2() = default;
-
-    using struct_maker = T2;
-    using data_t = T1;
-  };
 
   struct ax_name_container_base_const
   {
