@@ -105,4 +105,8 @@ namespace nt
             }
         };
     }
+    template <typename T>
+    auto required(){
+        return std::optional<T>();
+    }
 }

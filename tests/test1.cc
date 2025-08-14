@@ -71,7 +71,7 @@ void my_function(ARGS &&...args)
   auto t0 = bind_args(
       subdetector = 0,
       sector(15),
-      sector2 = std::optional<int>())(
+      sector2 = nt::required<int>())(
       args...);
 
   std::cout << t0 << std::endl;
