@@ -374,14 +374,14 @@ namespace nt
   struct field_name_container : TBase
   {
  
-    //template <typename T>
-   // inline static constexpr bool _is_containt_in = _has_type__<T>();
+    template <typename T>
+    inline static constexpr bool _is_containt_in_v =TBase:: template  _is_containt_in<T>();
     
     template <typename T>
     constexpr static decltype(auto) get(T &&t)
     {
 
-      if constexpr (TBase:: template  _is_containt_in<T>())
+      if constexpr (_is_containt_in_v<T>)
       {
         return TBase::get(std::forward<T>(t));
       }

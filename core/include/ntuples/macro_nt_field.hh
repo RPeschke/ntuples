@@ -43,9 +43,9 @@
     {                                                                             \
       struct getter_t                                                             \
       {                                                                           \
-        static constexpr decltype(auto) get(decltype(e.val) x)                             \
+        static constexpr decltype(auto) get(decltype(e.val) x)                    \
         {                                                                         \
-            return (x.field_name); \
+            return (x.field_name);                                                \
         }                                                                         \
       };                                                                          \
       return getter_t{};                                                          \
