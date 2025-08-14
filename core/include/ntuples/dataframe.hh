@@ -4,15 +4,7 @@
 namespace nt{
 
 
-    template <typename T1, typename T2>
-  struct ax_type2 : T1, T2
-  {
 
-    constexpr ax_type2() = default;
-
-    using struct_maker = T2;
-    using data_t = T1;
-  };
 
   template <typename... Ts>
   struct dataframe : nt::base_maker_t<nt::_Remove_cvref_t<Ts>, nt::ax_type2<std::vector<Ts>, typename Ts::struct_maker>>...

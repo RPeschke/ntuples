@@ -23,7 +23,7 @@
             return field_name;                                                         \
           }                                                                       \
         };                                                                        \
-        return nt::type_container<Zt##field_name>{};                                   \
+        return Zt##field_name{};                                   \
       }                                                                           \
       else                                                                        \
       {                                                                           \
@@ -36,7 +36,7 @@
             return field_name;                                                         \
           }                                                                       \
         };                                                                        \
-        return nt::type_container<Zt##field_name>{};                                   \
+        return Zt##field_name{};                                   \
       }                                                                           \
     }                                                                             \
     else if constexpr (e.N_value == nt::field_name_container_base_const::c_getter1)  \
@@ -61,13 +61,27 @@
       };                                                                          \
       return name_getter_t{};                                                     \
     }                                                                             \
-     else if constexpr (e.N_value == nt::field_name_container_base_const::c_has_field) \
+     else if constexpr (e.N_value == nt::field_name_container_base_const::c_Static_assert_fail) \
      {                                                                               \
-       struct has_field_t    {                                                       \
+       struct Static_assert_fail_T    {                                                       \
               static constexpr void static_assert_fail(){  \
                   static_assert(dependent_false<decltype(e)>::value, "[NTUPLE ERROR] Field `" #field_name "` does not exist in this ntuple");                                                                     \
               }                         \
         };                                                                          \
+      return Static_assert_fail_T{};                                                       \
+    }                                                                             \
+     else if constexpr (e.N_value == nt::field_name_container_base_const::c_has_field) \
+     {                                                                               \
+       struct has_field_t    {                                                       \
+              static constexpr auto has_field(){                                     \
+                using T = std::remove_cvref_t<decltype(e.val)>;                      \
+                if constexpr (requires (T& x) { x.field_name; }) {                   \
+                  return std::true_type{};                                                        \
+                } else {                                                             \
+                  return std::false_type{};                                                      \
+                }                                                                    \
+              }                                                                      \
+        };                                                                           \
       return has_field_t{};                                                       \
     }                                                                             \
   };                                                                              \

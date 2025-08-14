@@ -31,39 +31,41 @@ namespace nt
     using type = T1;
   };
 
-  template <typename T1, typename T2>
-  struct ax_type : T2
+  template <typename T1, typename field_name_container_T_>
+  struct field_type : field_name_container_T_
   {
     T1 v = {};
-    constexpr ax_type() {}
-    constexpr ax_type(T1 t1) : v(std::move(t1)) {}
-    constexpr ax_type operator=(T1 &&t1) const { return ax_type(std::move(t1)); }
-    constexpr ax_type operator=(const T1 &t1) const { return ax_type(t1); }
+    constexpr field_type()  =default;
+    constexpr field_type(const field_type&) = default;
+    constexpr field_type(field_type&&) = default;
+    constexpr field_type(T1 t1) : v(std::move(t1)) {}
+    constexpr field_type operator=(T1 &&t1) const { return field_type(std::move(t1)); }
+    constexpr field_type operator=(const T1 &t1) const { return field_type(t1); }
 
     template <typename T_IN>
-    constexpr ax_type operator()(T_IN &&t1) const { return ax_type(std::move(static_cast<T1>(t1))); }
+    constexpr field_type operator()(T_IN &&t1) const { return field_type(std::move(static_cast<T1>(t1))); }
 
     template <typename T_IN>
-    constexpr ax_type operator()(const T_IN &t1) const { return ax_type(static_cast<T1>(t1)); }
-    constexpr ax_type operator=(T1 &&t1)
+    constexpr field_type operator()(const T_IN &t1) const { return field_type(static_cast<T1>(t1)); }
+    constexpr field_type operator=(T1 &&t1)
     {
       v = std::move(t1);
       return *this;
     }
-    constexpr ax_type &operator=(const T1 &t1)
+    constexpr field_type &operator=(const T1 &t1)
     {
       v = t1;
       return *this;
     }
 
     template <typename T>
-    constexpr ax_type &operator=(const ax_type<T1, T> &t1)
+    constexpr field_type &operator=(const field_type<T1, T> &t1)
     {
       v = t1.v;
       return *this;
     }
 
-    using struct_maker = T2;
+    using field_name_container_T = field_name_container_T_;
     using data_t = T1;
 
     operator T1()
@@ -77,101 +79,101 @@ namespace nt
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator<(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
+    friend constexpr bool operator<(const field_type &lhs, const field_type<T1, T_RHS> &rhs)
     {
       return lhs.v < rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator<=(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
+    friend constexpr bool operator<=(const field_type &lhs, const field_type<T1, T_RHS> &rhs)
     {
       return lhs.v <= rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator==(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
+    friend constexpr bool operator==(const field_type &lhs, const field_type<T1, T_RHS> &rhs)
     {
       return lhs.v == rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator!=(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
+    friend constexpr bool operator!=(const field_type &lhs, const field_type<T1, T_RHS> &rhs)
     {
       return lhs.v != rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator>=(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
+    friend constexpr bool operator>=(const field_type &lhs, const field_type<T1, T_RHS> &rhs)
     {
       return lhs.v >= rhs.v;
     }
 
     template <typename T_RHS>
-    friend constexpr bool operator>(const ax_type &lhs, const ax_type<T1, T_RHS> &rhs)
+    friend constexpr bool operator>(const field_type &lhs, const field_type<T1, T_RHS> &rhs)
     {
       return lhs.v > rhs.v;
     }
 
-    friend constexpr bool operator<(const ax_type &lhs, const T1 &rhs)
+    friend constexpr bool operator<(const field_type &lhs, const T1 &rhs)
     {
       return lhs.v < rhs;
     }
-    friend constexpr bool operator<(const T1 lhs, const ax_type &rhs)
+    friend constexpr bool operator<(const T1 lhs, const field_type &rhs)
     {
       return lhs < rhs.v;
     }
 
-    friend constexpr bool operator<=(const ax_type &lhs, const T1 &rhs)
+    friend constexpr bool operator<=(const field_type &lhs, const T1 &rhs)
     {
       return lhs.v <= rhs;
     }
 
-    friend constexpr bool operator<=(const T1 &lhs, const ax_type &rhs)
+    friend constexpr bool operator<=(const T1 &lhs, const field_type &rhs)
     {
       return lhs <= rhs.v;
     }
 
-    friend constexpr bool operator==(const ax_type &lhs, const T1 &rhs)
+    friend constexpr bool operator==(const field_type &lhs, const T1 &rhs)
     {
       return lhs.v == rhs;
     }
 
-    friend constexpr bool operator==(const T1 &lhs, const ax_type &rhs)
+    friend constexpr bool operator==(const T1 &lhs, const field_type &rhs)
     {
       return lhs == rhs.v;
     }
 
-    friend constexpr bool operator!=(const ax_type &lhs, const T1 &rhs)
+    friend constexpr bool operator!=(const field_type &lhs, const T1 &rhs)
     {
       return lhs.v != rhs;
     }
 
-    friend constexpr bool operator!=(const T1 &lhs, const ax_type &rhs)
+    friend constexpr bool operator!=(const T1 &lhs, const field_type &rhs)
     {
       return lhs != rhs.v;
     }
 
-    friend constexpr bool operator>=(const ax_type &lhs, const T1 &rhs)
+    friend constexpr bool operator>=(const field_type &lhs, const T1 &rhs)
     {
       return lhs.v >= rhs;
     }
 
-    friend constexpr bool operator>=(const T1 &lhs, const ax_type &rhs)
+    friend constexpr bool operator>=(const T1 &lhs, const field_type &rhs)
     {
       return lhs >= rhs.v;
     }
 
-    friend constexpr bool operator>(const ax_type &lhs, const T1 &rhs)
+    friend constexpr bool operator>(const field_type &lhs, const T1 &rhs)
     {
       return lhs.v > rhs;
     }
 
-    friend constexpr bool operator>(const T1 &lhs, const ax_type &rhs)
+    friend constexpr bool operator>(const T1 &lhs, const field_type &rhs)
     {
       return lhs > rhs.v;
     }
 
-    friend std::ostream &operator<<(std::ostream &out, const ax_type &self)
+    friend std::ostream &operator<<(std::ostream &out, const field_type &self)
     {
       out << self.get_name() << ": ";
 
@@ -187,7 +189,7 @@ namespace nt
     }
 
   private:
-    using T2::operator=;
+    using field_name_container_T_::operator=;
   };
 
   namespace comparators
@@ -278,7 +280,15 @@ namespace nt
     }
   }
 
+    template <typename data_t_, typename field_name_container_T_>
+  struct ax_type2 : data_t_, field_name_container_T_
+  {
 
+    constexpr ax_type2() = default;
+
+    using field_name_container_T = field_name_container_T_;
+    using data_t = data_t_;
+  };
 
   struct field_name_container_base_const
   {
@@ -286,6 +296,7 @@ namespace nt
     static constexpr int c_getter1 = 1;
     static constexpr int c_get_name = 2;
     static constexpr int c_has_field = 3;
+    static constexpr int c_Static_assert_fail = 4;
   };
 
   template <typename T2>
@@ -310,7 +321,7 @@ namespace nt
     }
 
     template <typename Data_T>
-    using base_t = typename decltype(struct_maker<Data_T>())::type;
+    using base_t =  decltype(struct_maker<Data_T>());
 
     template <typename T>
     static constexpr decltype(auto) get(T &t)
@@ -329,8 +340,8 @@ namespace nt
 
     static constexpr decltype(auto) static_assert_fail()
     {
-      using has_field_t1 = decltype(std::declval<Lambda_T>()(std::declval<type_wrap<int, c_has_field>>()));
-      has_field_t1::static_assert_fail();
+      using static_assert_fail_T = decltype(std::declval<Lambda_T>()(std::declval<type_wrap<int, c_Static_assert_fail>>()));
+      static_assert_fail_T::static_assert_fail();
     }
 
     template <typename T>
@@ -350,19 +361,27 @@ namespace nt
       using name_getter = decltype(std::declval<Lambda_T>()(std::declval<type_wrap<int, c_get_name>>()));
       return name_getter::get_name();
     }
+    template <typename T1>
+    static constexpr auto _is_containt_in(){
+       using T = std::remove_reference_t<T1>;
+        using has_field_t = decltype(std::declval<Lambda_T>()(std::declval<type_wrap<T, c_has_field>>()));
+      return has_field_t::has_field();
+    }
   };
 
-#define FIELD_NAME(T) #T
+
   template <typename TBase>
   struct field_name_container : TBase
   {
-    constexpr field_name_container() = default;
-
-
+ 
+    //template <typename T>
+   // inline static constexpr bool _is_containt_in = _has_type__<T>();
+    
     template <typename T>
     constexpr static decltype(auto) get(T &&t)
     {
-      if constexpr (has_field<T>())
+
+      if constexpr (TBase:: template  _is_containt_in<T>())
       {
         return TBase::get(std::forward<T>(t));
       }
@@ -388,7 +407,7 @@ namespace nt
     constexpr auto operator=(T t) const
     {
 
-      return ax_type<_Remove_cvref_t<T>, field_name_container>{std::move(t)};
+      return field_type<_Remove_cvref_t<T>, field_name_container>{std::move(t)};
     }
 
     template <typename T>
@@ -471,7 +490,7 @@ namespace nt
       return (([]()
                {
     using base_t = ntuple_base_t<T>;
-    using maker_t = typename decltype(std::declval<base_t>().value())::struct_maker;
+    using maker_t = typename decltype(std::declval<base_t>().value())::field_name_container_T;
     return std::is_same_v<maker_t, TARGET>; }()) ||
               ...);
     }
@@ -481,7 +500,7 @@ namespace nt
       int index = 0;
       int result = -1;
       // Fold expression over initializer list to evaluate in order and capture index
-      ((std::is_same_v<typename decltype(std::declval<ntuple_base_t<T>>().value())::struct_maker, TARGET>
+      ((std::is_same_v<typename decltype(std::declval<ntuple_base_t<T>>().value())::field_name_container_T, TARGET>
             ? (result = index, false)
             : true,
         ++index),

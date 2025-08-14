@@ -5,35 +5,45 @@
 
 
 
-#define __nt_new_field_core(field_name)                         \
-  struct zt##field_name                                        \
+#define __nt_new_field_core(field_name)                   \
+  struct zt##field_name                                   \
   {                                                       \
     template <typename T>                                 \
-    struct type_wrap                                      \
+    struct base_t                                         \
     {                                                     \
-      constexpr type_wrap() {}                                      \
+      constexpr base_t() {}                               \
       template <typename T1>                              \
-      constexpr type_wrap(T1 &&e_) : field_name(std::forward<T1>(e_)) {} \
-      T field_name;                                            \
-      decltype(auto) value() const                                           \
-          {                                                                       \
-            return field_name;                                                         \
+      constexpr base_t(T1 &&e_) :                         \
+             field_name(std::forward<T1>(e_)) {}          \
+      T field_name;                                       \
+      decltype(auto) value() const                        \
+          {                                               \
+            return field_name;                            \
           }                                               \
     };                                                    \
-    template <typename Data_T>                            \
-    using base_t = type_wrap<Data_T>;                     \
     static auto get_name()                                \
     {                                                     \
       return #field_name;                                 \
     }                                                     \
     template <typename T>                                 \
     static constexpr decltype(auto) get(T&& t) {          \
-      return (std::forward<T>(t).field_name);               \
+      return (std::forward<T>(t).field_name);             \
     }                                                     \
-    template <typename T=int>                                                     \
+    template <typename T=int>                             \
     static constexpr decltype(auto) static_assert_fail() {\
-       static_assert(dependent_false<T>::value, "[NTUPLE ERROR] Field `" #field_name "` does not exist in this ntuple");                                                                     \
-    }\
+       static_assert(dependent_false<T>::value,           \
+        "[NTUPLE ERROR] Field `" #field_name              \
+        "` does not exist in this ntuple");               \
+    }                                                     \
+    template <typename T1>                                \
+    static constexpr bool _is_containt_in(){                 \
+       using T = std::remove_reference_t<T1>;             \
+    if constexpr (requires (T& x) { x.field_name; }) {    \
+        return true;                                      \
+    } else {                                              \
+        return false;                                     \
+    }                                                     \
+    }                                                     \
   }
 
 #define __nt_new_field(qualifier, field_name, value) \

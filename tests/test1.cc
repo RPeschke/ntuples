@@ -112,6 +112,53 @@ int main(int argv, char **argc)
   auto t = nt::ntuple();
   std::cout << t << std::endl;
 
+
+
+auto foo = [](auto&& t) {
+    using T = std::remove_reference_t<decltype(t)>;
+
+    if constexpr (requires (T& x) { x.test; }) {   // note the (T& x)
+       // std::cout << x.test << '\n';               // <-- use x or t; either is fine
+        std::cout << t.test << '\n';
+    } else {
+        std::cout << "no test\n";
+    }
+};
+foo(t);
+auto tt2 = nt::ntuple{
+  nt_field(test) = 1
+};
+
+ std::cout << sector2._is_containt_in<decltype(t)>() << std::endl;
+ if constexpr (sector2._is_containt_in<decltype(
+  nt::ntuple{
+    nt_field(test) = 1
+  }
+)>() ) {
+   std::cout << "sector2 found" << std::endl;
+}
+
+ if constexpr (tt2.test._is_containt_in<decltype(
+  nt::ntuple{
+    nt_field(sector2) = 1
+  }
+)>() ) {
+   std::cout << "sector2 found" << std::endl;
+}
+
+
+ if constexpr (tt2.test._is_containt_in<decltype(
+  nt::ntuple{
+    nt_field(test) = 1
+  }
+)>() ) {
+   std::cout << "test found" << std::endl;
+}
+
+
+if constexpr (sector2._is_containt_in<decltype(nt::ntuple{sector2 = 1})>() ) {
+   std::cout << "sector found" << std::endl;
+}
   try
   {
     my_function();

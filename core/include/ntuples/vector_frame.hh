@@ -57,7 +57,7 @@ namespace nt
                 nt::_Remove_cvref_t<Ts>,
                 nt::ax_type2<
                     nt::__imple__::member_span<Ts, vector_frame_impl<std::index_sequence<Is...>, Ts...>, Is>,
-                    typename Ts::struct_maker>>...
+                    typename Ts::field_name_container_T>>...
         {
             std::vector<nt::ntuple<Ts...>> m_data;
             /* data */
