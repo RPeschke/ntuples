@@ -1,16 +1,8 @@
 
-#include "ntuples/ntuples.hh"
-#include "ntuples/dataframe.hh"
-#include "ntuples/generic_algorithms.hh"
-#include "ntuples/macro_nt_field.hh"
-#include "ntuples/macro_comperator.hh"
-#include "ntuples/macro_groupby.hh"
-#include "ntuples/macro_nt_new_field.hh"
-#include "ntuples/comparators.hh"
+#include "ntuples/full.hh"
 
 
-
-  #include <algorithm>
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <numeric>
@@ -23,8 +15,6 @@
 #include <ranges>
 #include <algorithm>
 #include <numeric> // for std::iota
-
-#include "ntuples/std_adapter.hh"
 
 
 
@@ -212,8 +202,10 @@ auto update1(NT_T&& t, T1&& t1, ARGS&&... args){
     }
 
 
+
 int main(int argv, char** argc) {
 
+  vector_frames_example::vector_frames();
  auto t = nt::ntuple();
  std::cout << t << std::endl;
 

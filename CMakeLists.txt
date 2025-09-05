@@ -12,8 +12,6 @@ project(ntuples
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(ntuples INTERFACE core/include/ntuples/ntuples.hh)
 add_library(ntuples::ntuples ALIAS ntuples)
@@ -25,7 +23,7 @@ target_include_directories(ntuples INTERFACE
 )
 
 
-target_compile_features(ntuples INTERFACE cxx_std_17)
+target_compile_features(ntuples INTERFACE cxx_std_20)
 
 
 

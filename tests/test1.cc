@@ -103,9 +103,57 @@ void fun2(nt::nt_erased<int> te)
   }
 }
 
+
+
+    namespace vector_frames_example  {
+    nt_new_field_name(index);    // can be used with predefined names
+    nt_new_field_name(index_squared);
+
+
+    void vector_frames() {
+        using namespace std::views;
+
+        auto vf1 = nt::fill_vector_frame(
+
+            iota(1, 10) 
+            | transform([](auto i) { 
+                        return nt::ntuple(
+                            index = i, 
+                            index_squared = i * i, 
+                            nt_field(cubed) = i * i * i,  // names can be created on the fly (no need to predefine)
+                            nt_field(str_conversion) = "this is the string number " +  std::to_string(i)  // like tuple the ntuple can handle different types
+                        ); 
+                        }) 
+
+        );
+
+        std::cout << vf1 << std::endl;
+
+        for (auto &&e : vf1.str_conversion() | take(3)) {
+            std::cout << e << std::endl;
+        }
+
+         std::cout << vf1.cubed()[3] << std::endl;
+
+        auto vf2 = nt::fill_vector_frame( vf1.size() , [&](size_t i) { 
+            return nt::ntuple(
+                vf1[i].cubed,
+                vf1.str_conversion[i],
+                nt_field(new_field) = vf1.index()[i] + 1000
+            ); 
+        });
+
+        std::cout << vf2 << std::endl;
+
+
+    }
+
+}
+
+
 int main(int argv, char **argc)
 {
-
+vector_frames_example::vector_frames();
   const int int1{};
   auto s = nt::span<const int>(&argv, 1, 1);
 

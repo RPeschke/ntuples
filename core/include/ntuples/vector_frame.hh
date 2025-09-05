@@ -1,6 +1,7 @@
 #pragma once
 #include "ntuples/ntuples.hh"
 #include "ntuples/constexpr_for.hh"
+#include "ntuples/generic_algorithms.hh"
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -41,9 +42,20 @@ namespace nt
                     m_vec.m_data.size(), sizeof(decltype(m_vec.m_data[0])));
             }
 
-            auto operator()()
+            auto operator()() 
             {
                 return get();
+            }
+
+            auto operator()() const
+            {
+                return get();
+            }
+
+            auto operator[](size_t i) const 
+            {
+                auto &m_vec = reinterpret_cast<VECT_T &>(*(this - field_index));
+                return  FIELD_T::get(m_vec.m_data[i]);
             }
         };
 
@@ -72,6 +84,7 @@ namespace nt
             friend auto end(vector_frame_impl &v) { return v.m_data.end(); }
             friend std::ostream &operator<<(std::ostream &os, const vector_frame_impl &v)
             {
+                using nt::algorithms::operator<<;
                 os << v.m_data;
                 return os;
             }
