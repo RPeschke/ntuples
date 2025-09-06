@@ -7,3 +7,5 @@
                     nt::algorithms::group( __VA_ARGS__ ) ); \
                     static constexpr T t{};                 \
                     return t; }()
+
+                    

@@ -23,26 +23,48 @@ namespace nt {
 
   template <std::size_t N, typename... Ts>
   decltype(auto) get(ntuple<Ts...>& t) {
-    using Field = _Remove_cvref_t<NthTypeOf<N, Ts...>>;
-    return Field::get(t);
+    
+    if constexpr (N >= sizeof...(Ts)) {
+      static_assert(dependent_false<ntuple<Ts...>>::value, "[NTUPLE ERROR] get<N>: index out of range (N must be less than the number of fields).");
+    } else {
+      using Field = _Remove_cvref_t<NthTypeOf<N, Ts...>>;
+      return Field::get(t);
+    }
+    
   }
 
   template <std::size_t N, typename... Ts>
   decltype(auto) get(const ntuple<Ts...>& t) {
-    using Field = _Remove_cvref_t<NthTypeOf<N, Ts...>>;
-    return Field::get(t);
+    if constexpr (N >= sizeof...(Ts)) {
+      static_assert(dependent_false<ntuple<Ts...>>::value, "[NTUPLE ERROR] get<N>: index out of range (N must be less than the number of fields).");
+      
+    } else {
+      using Field = _Remove_cvref_t<NthTypeOf<N, Ts...>>;
+      return Field::get(t);
+    }
+    
   }
 
   template <std::size_t N, typename... Ts>
   decltype(auto) get(ntuple<Ts...>&& t) {
-    using Field = _Remove_cvref_t<NthTypeOf<N, Ts...>>;
-    return std::move(Field::get(t));
+    if constexpr (N >= sizeof...(Ts)) {
+      static_assert(dependent_false<ntuple<Ts...>>::value, "[NTUPLE ERROR] get<N>: index out of range (N must be less than the number of fields).");
+    } else {
+      using Field = _Remove_cvref_t<NthTypeOf<N, Ts...>>;
+      return Field::get(t);
+    }
+    
   }
 
   template <std::size_t N, typename... Ts>
   decltype(auto) get(const ntuple<Ts...>&& t) {
-    using Field = _Remove_cvref_t<NthTypeOf<N, Ts...>>;
-    return std::move(Field::get(t));
+    if constexpr (N >= sizeof...(Ts)) {
+      static_assert(dependent_false<ntuple<Ts...>>::value, "[NTUPLE ERROR] get<N>: index out of range (N must be less than the number of fields).");
+    } else {
+      using Field = _Remove_cvref_t<NthTypeOf<N, Ts...>>;
+      return Field::get(t);
+    }
+    
   }
 
 } // namespace nt

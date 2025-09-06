@@ -10,6 +10,9 @@
 
 #include "ntuples/constexpr_for.hh"
 
+
+
+
 template <typename T>
 struct dependent_false : std::false_type
 {
@@ -494,6 +497,15 @@ namespace nt
     return std::is_same_v<maker_t, TARGET>; }()) ||
               ...);
     }
+
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-value"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-value"
+#endif
+
     template <typename TARGET>
     constexpr static int index_of_struct_maker_type()
     {
@@ -507,7 +519,13 @@ namespace nt
        ...);
       return result;
     }
-
+    
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+    
     friend constexpr bool operator<(const ntuple &lhs, const ntuple &rhs)
     {
       constexpr auto lt = comparators::lessThan<T...>();
@@ -576,3 +594,6 @@ namespace nt
   constexpr bool contains_type_v = contains_type<T, Ntuple>::value;
 
 }
+
+
+

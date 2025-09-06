@@ -13,7 +13,7 @@
       {                                                                           \
         struct Zt##field_name                                                          \
         {                                                                         \
-          constexpr Zt##field_name() {}                                                          \
+          constexpr Zt##field_name() =default;                                                         \
           constexpr Zt##field_name(const decltype(e.val) &e_) : field_name(e_) {}                     \
           constexpr Zt##field_name(decltype(e.val) &e_) : field_name(e_) {}                           \
           constexpr Zt##field_name(decltype(e.val) &&e_) : field_name(std::move(e_)) {}               \
@@ -73,12 +73,12 @@
      else if constexpr (e.N_value == nt::field_name_container_base_const::c_has_field) \
      {                                                                               \
        struct has_field_t    {                                                       \
-              static constexpr auto has_field(){                                     \
+              static constexpr bool has_field(){                                     \
                 using T = std::remove_cvref_t<decltype(e.val)>;                      \
                 if constexpr (requires (T& x) { x.field_name; }) {                   \
-                  return std::true_type{};                                                        \
+                  return true;                                                        \
                 } else {                                                             \
-                  return std::false_type{};                                                      \
+                  return false;                                                      \
                 }                                                                    \
               }                                                                      \
         };                                                                           \
@@ -94,3 +94,6 @@
 #define nt_field_t(field_name, value)                                  \
   auto __internal__##field_name = [] { return nt_field(field_name) = value; }; \
   using field_name = decltype(__internal__##field_name())
+
+
+

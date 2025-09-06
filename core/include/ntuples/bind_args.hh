@@ -28,7 +28,8 @@ namespace nt
         {
             if constexpr (::nt::__imple__::is_ax_name_container_v<T1>)
             {
-                if constexpr (t1.index_of<NT_T>() < N)
+                using T1Bare = std::remove_cvref_t<T1>;
+                if constexpr (T1Bare::template  index_of<NT_T>() < N)
                 {
                     static_assert(dependent_false<NT_T>::value, "[NTUPLE ERROR] Named argument appears after positional arguments. "
                                                                 "All named arguments must follow positional ones.");

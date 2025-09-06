@@ -183,20 +183,20 @@ namespace nt
         auto type_at(size_t index) const{
             return self->type_at(index);
         }
-        template <typename T>
-        T get(size_t index) const
+        template <typename T1>
+        T1 get(size_t index) const
         {
-            if (self->type_at(index) != typeid(T))
+            if (self->type_at(index) != typeid(T1))
                 throw std::runtime_error("Type mismatch at index");
-            return *reinterpret_cast<const T *>(self->get_raw(index));
+            return *reinterpret_cast<const T1 *>(self->get_raw(index));
         }
 
-        template <typename T>
-        T get(const std::string &name) const
+        template <typename T1>
+        T1 get(const std::string &name) const
         {
-            if (self->type_at(name) != typeid(T))
+            if (self->type_at(name) != typeid(T1))
                 throw std::runtime_error("Type mismatch at index");
-            return *reinterpret_cast<const T *>(self->get_raw(name));
+            return *reinterpret_cast<const T1 *>(self->get_raw(name));
         }
 
         auto size() const
