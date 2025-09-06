@@ -52,7 +52,13 @@ namespace nt
                 return get();
             }
 
-            auto operator[](size_t i) const 
+            decltype(auto) operator[](size_t i) const 
+            {
+                auto &m_vec = reinterpret_cast<const VECT_T &>(*(this - field_index));
+                return  FIELD_T::get(m_vec.m_data[i]);
+            }
+
+            decltype(auto) operator[](size_t i)
             {
                 auto &m_vec = reinterpret_cast<VECT_T &>(*(this - field_index));
                 return  FIELD_T::get(m_vec.m_data[i]);
